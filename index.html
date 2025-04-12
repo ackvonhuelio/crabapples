@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<!--Credit to vexcess for pjs in html -->
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title></title>
+        <style>
+            :root {
+                --background-color: #000000;
+            }
+
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0px;
+                padding: 0px;
+                background-color: var(--background-color);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                touch-action: none; /* Prevent unintended zooming */
+                user-select: none; /* Prevent text selection */
+            }
+
+            #wrapper {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                user-select: none; /* Prevent text selection within the canvas */
+            }
+
+            canvas {
+            position:absolute;
+            transform-origin: center;
+            }
+        </style>
+    </head>
+    <body id="wrapper">
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <!-- jQuery plugin file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.1/jquery.timeago.min.js"></script>
+    <script id="PJS_code" type="data" data-width="600" data-height="600">
+
+
+        // some important variables
+        var scene = 'menu';
+        var cMouseX = 0;
+        var cMouseY = 0;
+        var shake = 0;
+        var cam = {
+          x: 0,
+          y: 0,
+          zoom: 1
+        };
+        var toZoom = 1;
+
+        // w or wasd
+        var CONTROLS = CONTROLS||'w';
+
+        // zigzag function (first thing i made for this game believe it or not)
+        function zigzag(a, b, c, d, per, ang) {
+          var n = dist(a, b, c, d) / per;
+          var angle = atan2(d - b, c - a);
+          for (var i = 0; i < n - 1; i++) {
+            var t = (per * i);
+            var tNext = (per * (i + 1));
+            var tHalf = (t + tNext) / 2;
+            var tD = ((tNext - t) / 2) / cos(ang);
+            pushStyle();
+            noStroke();
+            triangle(a + cos(angle) * t, b + sin(angle) * t, a + cos(angle) * t + cos(ang) * tD, b + sin(angle) * t + sin(ang) * tD, a + cos(angle) * tNext, b + sin(angle) * tNext);
+            popStyle();
+            line(a + cos(angle) * t, b + sin(angle) * t, a + cos(angle) * t + cos(ang) * tD, b + sin(angle) * t + sin(ang) * tD);
+            line(a + cos(angle) * t + cos(ang) * tD, b + sin(angle) * t + sin(ang) * tD, a + cos(angle) * tNext, b + sin(angle) * tNext);
+
+          }
+        }
+        // makes the crab apples logo
+        function logo(x,y){
+        pushMatrix();
+        translate(x,y);
+        translate(-300,-300);
+        for(var i = 0; i < 2; i++){
+        pushMatrix();
+        if(i === 1){
+        stroke(0,0,0);
+        strokeWeight(9);
+        fill(181, 0, 0);
+        translate(0,cos(frameCount)*8);
+        }else{
+        translate(0,cos(frameCount)*5);
+        noStroke();
+        fill(232, 116, 116);
+        translate(7,7);
+        }
+        pushMatrix();
+        translate(-35,-29);
+        scale(0.8);
+        beginShape();
+        vertex(217,105);
+        vertex(93,160);
+        vertex(87,218);
+        vertex(164,286);
+        vertex(322,207);
+        vertex(178,249);
+        vertex(134,200);
+        endShape(CLOSE);
+        popMatrix();
+        if(i === 1){
+        strokeWeight(12);
+        }else{
+        noStroke();
+        }
+        pushMatrix();
+        translate(111,74);
+        scale(0.5);
+        beginShape();
+        vertex(78,282);
+        vertex(174,79);
+        vertex(227,71);
+        vertex(295,89);
+        vertex(307,131);
+        vertex(228,171);
+        vertex(326,294);
+        vertex(177,174);
+        vertex(258,128);
+        vertex(253,108);
+        vertex(208,107);
+        vertex(199,161);
+        vertex(150,188);
+        endShape(CLOSE);
+        popMatrix();
+        pushMatrix();
+        translate(204,65);
+        scale(0.5);
+        beginShape();
+        vertex(70,254);
+        vertex(174,97);
+        vertex(293,352);
+        vertex(187,179);
+        vertex(171,128);
+        vertex(144,186);
+        vertex(267,156);
+        vertex(150,201);
+        vertex(129,204);
+        endShape(CLOSE);
+        popMatrix();
+        pushMatrix();
+        translate(253,47);
+        scale(0.5);
+        rotate(-11);
+        beginShape();
+        vertex(257,-16);
+        vertex(116,95);
+        vertex(103,258);
+        vertex(125,306);
+        vertex(282,288);
+        vertex(278,227);
+        vertex(242,206);
+        vertex(168,206);
+        vertex(152,233);
+        vertex(130,261);
+        vertex(175,231);
+        vertex(236,222);
+        vertex(253,238);
+        vertex(246,256);
+        vertex(234,273);
+        vertex(139,279);
+        vertex(139,115);
+        endShape(CLOSE);
+        popMatrix();
+        popMatrix();
+        }
+        var string = 'apples';
+        for(var i = 0; i < 6; i++){
+        pushMatrix();
+        noStroke();
+        fill(0, 0, 0, 100);
+        translate(0,cos(frameCount+90)*5);
+        ellipse(208+i*65,236,60,60);
+        popMatrix();
+        }
+        for(var i = 0; i < 6; i++){
+        pushMatrix();
+        translate(0,cos(frameCount+40+i*(100/6))*8);
+        fill(255, 0, 51);
+        strokeWeight(5);
+        stroke(0,0,0);
+        ellipse(213+i*65,241,60,60);
+        textSize(40);
+        fill(255, 255, 255);
+        textAlign(CENTER,BASELINE);
+        text(string[i],213+i*65,254);
+        popMatrix();
+        pushMatrix();
+
+        noStroke();
+        fill(23, 125, 0);
+        pushMatrix();
+        translate(213+i*65,241);
+        translate(-5,cos(frameCount+40+i*(100/6))*8-38);
+        pushMatrix();
+        translate(0,10);
+        rotate(-20+cos(frameCount+40+i*(100/6))*10);
+        translate(0,-10);
+        ellipse(0, 0, 10, 20);
+        popMatrix();
+        strokeWeight(8);
+        stroke(94, 43, 17);
+        line(2, 15, 5, -4);
+        popMatrix();
+        popMatrix();
+        }
+        popMatrix();
+        }
+
+        // more important variables
+        var fruits = [];
+        var walls = [];
+        var lazerProjections = [];
+        var images = {};
+        var p;
+        var pushedKey = false;
+        var spectating = false;
+        background(0,0,0);
+        var bgSave = get();
+        var gameOver = false;
+        var previousScene = scene;
+        var newSceneCount = 0;
+        var gameOverTime = 0;
+        var clicked;
+        // i planned on this being more important, but it only makes claws
+        // loading some images
+        var loads = [{
+            id: 'claw0',
+            make: function() {
+              strokeWeight(4);
+              fill(191, 57, 0);
+              arc(15, 0, 30, 15, 180, 318);
+              arc(10, 0, 20, 40, 45, 185);
+              strokeWeight(3);
+              zigzag(9, 0, 17, 18, 6, 17);
+              strokeWeight(3);
+              zigzag(10, 0, 33, -6, 6, 17);
+            }
+          },
+          {
+            id: 'claw1',
+            make: function() {
+              strokeWeight(4);
+              fill(25, 214, 0);
+              arc(15, 0, 30, 15, 180, 318);
+              arc(10, 0, 20, 40, 45, 185);
+              strokeWeight(3);
+              zigzag(9, 0, 17, 18, 6, 17);
+              strokeWeight(3);
+              zigzag(10, 0, 33, -6, 6, 17);
+            }
+          },
+          {
+            id: 'claw2',
+            make: function() {
+              strokeWeight(4);
+              fill(227, 204, 0);
+              arc(15, 0, 30, 15, 180, 318);
+              arc(10, 0, 20, 40, 45, 185);
+              strokeWeight(3);
+              zigzag(9, 0, 17, 18, 6, 17);
+              strokeWeight(3);
+              zigzag(10, 0, 33, -6, 6, 17);
+            }
+          },
+          {
+            id: 'claw3',
+            make: function() {
+              strokeWeight(4);
+              fill(232, 0, 166);
+              arc(15, 0, 30, 15, 180, 318);
+              arc(10, 0, 20, 40, 45, 185);
+              strokeWeight(3);
+              zigzag(9, 0, 17, 18, 6, 17);
+              strokeWeight(3);
+              zigzag(10, 0, 33, -6, 6, 17);
+            }
+          },
+
+        ];
+
+        for (var i = 0; i < loads.length; i++) {
+          background(8, 8, 8);
+          background(255, 255, 255, 0);
+          pushMatrix();
+          //scale(2);
+          translate(300, 300);
+          scale(2);
+          loads[i].make();
+          popMatrix();
+          images[loads[i].id] = get();
+        }
+
+        function makeImage(id) {
+          pushMatrix();
+          scale(0.5);
+          translate(-300, -300);
+          image(images[id], 0, 0);
+          popMatrix();
+        }
+        //
+
+        /**Inputs copied from other program if that matter**/
+        //{
+
+        var TAPPED_TIME = 1;
+
+        function Key() {
+          this.pressed = false;
+          this.tapped = false;
+          //how long key will stay tapped
+          this.tappedTime = TAPPED_TIME;
+        }
+        Key.prototype.press = function() {
+          this.tapped = false;
+          if (this.pressed === false) {
+            this.tapped = true;
+            this.tappedTime = TAPPED_TIME;
+          }
+          this.pressed = true;
+
+        };
+        Key.prototype.unTap = function() {
+          this.tapped = false;
+          this.tappedTime = 0;
+        };
+        Key.prototype.isTapped = function() {
+
+          if (this.tapped === true) {
+
+            this.tapped = false;
+            this.tappedTime = 0;
+            return true;
+          } else {
+            return false;
+          }
+        };
+        Key.prototype.update = function() {
+          this.tappedTime--;
+        };
+        var keys = {};
+
+        function pressed(e) {
+          if (e) {
+            if (e.pressed) {
+              return true;
+            }
+          }
+        }
+
+        function tapped(e) {
+          if (e) {
+            if (e.tapped) {
+              return true;
+            }
+          }
+        }
+
+
+        keyPressed = function() {
+          if (!keys[keyCode]) {
+            keys[keyCode] = new Key();
+          }
+          keys[keyCode].press();
+          pushedKey = key;
+          // println(keyCode);
+        };
+        keyReleased = function() {
+          keys[keyCode].pressed = false;
+        };
+
+        function manageKeys() {
+
+          for (var i in keys) {
+            if (keys[i].tapped === true) {
+
+              keys[i].update();
+              if (keys[i].tappedTime <= 0) {
+                keys[i].tapped = false;
+              }
+            }
+
+          }
+
+        }
+
+
+        //}
+
+        // i think u can make out what this does by the name
+        function shuffleArray(e) {
+          var sra = [];
+          var ea = [];
+          for (var q = 0; q < e.length; q++) {
+            ea.push(e[q]);
+          }
+          for (var i = 0; i < e.length; i++) {
+            var sn = round(random(0, ea.length - 1));
+            sra.push(ea[sn]);
+            ea.splice(sn, 1);
+          }
+          return (sra);
+        }
+
+        // a bunch of names
+        var fruitNames = [
+        "Winston", "OhNoes", "Hopper", "Steve Jobs", "Electric Dolphin", "ackvonhey", "you", "Sal Khan", "Crab", "Johnathan Crabapples", "Fruit", "gr33napp1e", "The gamer", "Bobert", "Fifth", "SMV", "Mojo1000", "NL", "Astro", "CanonRouge24", "LeaferStudios", "Vortex", "TDJ", "Washington", "Cloudy Skies", "Peter", "Captain Longtreader", "Walkworthy", "Caige", "HSStudent", "Sugar", "Bearkirb", "F4stBo1", "ST", "Cooke's Ghost", "Virtuosa", "Time traveler", "Bob Lyon", "Legend", "help", "how do i play", "Noob", "Pro", "Hacker", "Burger", "Tomato", "I", "themself", "yourself", "VGhlIFJ1bGVy", "The rectangle king", "Joe", "Jeff", "Bob", "I forgot", "No One", "Maccy Cheese", "Door", "Minecraft Steve", "That's right I", "bopped", "blasted", "\ud83d\udd48\ud83d\udcec\ud83d\udd93\ud83d\udcec \u261d\u270c\ud83c\udf22\u2744\u261c\ud83c\udf23", "OhYes", "Fastrack", "Worty Frowlg", "Geist", "King crab", "Mr. Bean", "The One", "Necron", "Player", "Name", "I forgot my name", "Starving", "bkirby5944","Ducky Momo","Reflex","Twilight","Dark Knight","-A--I-","jokester134","cwalsh1223","~The Wolf~","Grayce Reed","Arctic","Digifox9","CommunityCoder","The Behemoth","CLOUDY","Titus Payton","Cookie","Himum", "ice to meet you", "WinstonWinner000", "LazerWolf", "JustZoul", "VVhiteTiger", "Jadie", "Crab Apples himself", "1000 hours", "I like cheese", "Number 15", "The Impostor", "Gaming", "AAAAAAAAAAAAAAAAAA", "hfdsktjguwekfg", ":)", "ez", "Skill Issue", "Good gaming chair", "println", "alt f4", "ctrl w", "test", "antidisestablishment", "A slug", "a", "aaaaaa", 'a field mouse', 'bunny foo foo',"XxGamerxX","Bennimus","Gray wolf","Willard","Corin","JentGent","Dat","Mr. Beast","Dominic R.","Liam K.","IA","CowboysFan232",
+        ];
+
+        var playstyles = [
+            // weight determines on average how many more players fall in that category (object duplicated for each weight)
+
+            // Normal playstyle, default everything
+            {
+                id: 'normal',
+                bopAggro: 80,
+                lazerAggro: 80,
+                bushLook:200,
+                bushStay:200,
+                weight:3,
+            },
+            // Camper, will try to hide in bushes as much as possible
+            {
+                id: 'camper',
+                bopAggro: 80,
+                lazerAggro: 80,
+                bushLook:50,
+                bushStay:500,
+                weight:2,
+            },
+            // Agressive, will attack more frequently and hide less
+            {
+                id: 'aggressive',
+                bopAggro: 90,
+                lazerAggro: 80,
+                bushLook:400,
+                bushStay:40,
+                weight:3,
+            },
+            // Defensive, will try to run away from fights and attack less
+            {
+                id: 'defensive',
+                bopAggro: 50,
+                dirMod:1,
+                lazerAggro: 80,
+                bushLook:150,
+                bushStay:200,
+                weight:2,
+            },
+            // Coward, similar to defensive but hides in bushes more often
+            {
+                id: 'coward',
+                bopAggro: 50,
+                dirMod:1,
+                lazerAggro: 80,
+                bushLook:50,
+                bushStay:450,
+                weight:1,
+            }
+        ];
+
+        // implement weights
+        for(var i = playstyles.length-1; i > -1; i--){
+            for(var q = 0; q < playstyles[i].weight-1; q++){
+            playstyles.push(playstyles[i]);
+            }
+        }
+
+
+        function fruit(x, y, skin) {
+          this.x = x;
+          this.y = y;
+          this.skin = skin;
+          this.vx = 0;
+          this.vy = 0;
+          this.anim = 'idle';
+          this.clawSpin = 90;
+          this.dir = 1;
+          this.toDir = 1;
+          this.noMove = 0;
+          this.bops = 0;
+          this.blasts = 0;
+          this.totBops = 0;
+          this.totBlasts = 0;
+          this.playstyle = playstyles[floor(random(0,playstyles.length))];
+          this.target = {
+            x: 0,
+            y: 0
+          };
+          this.CL = {
+            x: 0,
+            y: 0,
+            b: 0
+          };
+          this.CW = 0;
+          this.colCount = 0;
+          this.toRemove = false;
+          this.player = true;
+          this.id = random(0, 1000000000);
+          this.name = "Player";
+          fruits.push(this);
+        }
+        function claw(x, y, skin) {
+          pushMatrix();
+          translate(x, y);
+          stroke(0, 0, 0);
+          makeImage('claw' + skin);
+          popMatrix();
+        }
+        function between(x, a, b) {
+          if ((x >= a && x <= b) || (x >= b && x <= a)) {
+            return true;
+          }
+        }
+
+
+        // intro
+        var intro = {
+        img:false,
+        timer:0,
+        };
+        function loadIntro(){
+        background(171, 171, 171);
+        background(255,255,255,0);
+        stroke(0,0,0);
+        strokeWeight(5/0.8);
+        fill(160);
+        pushMatrix();
+        translate(264,214);
+        scale(0.8,0.5);
+        rotate(-6);
+        beginShape();
+        curveVertex(-1,46); 
+        curveVertex(-65,81);
+        curveVertex(-18,27); 
+        curveVertex(29,-4); 
+        curveVertex(-6,-63); 
+        curveVertex(42,-36); 
+        curveVertex(51,16); 
+        curveVertex(-1,46); 
+        curveVertex(-65,81); 
+        curveVertex(-18,27);
+        endShape();
+        popMatrix();
+        stroke(255, 0, 0);
+        strokeWeight(5);
+        for(var i = 0; i < 51; i++){
+        pushMatrix();
+        if(i === 0 || i ===50){
+        stroke(0,0,0);
+        strokeWeight(5);
+        if(i === 0){
+        fill(250, 250, 250);
+        }else{
+        noFill();
+        }
+        }else{
+        var num = {x:204,y:234};
+        translate(num.x,num.y);
+        scale(1-(0.4/50)*i,1);
+        translate(-num.x,-num.y);
+        fill(i*2+100);
+        noStroke();
+        }
+        pushMatrix();
+        scale(0.9,1);
+        translate(27,0);
+        pushMatrix();
+        translate(200,200);
+        beginShape();
+        curveVertex(8,71); 
+        curveVertex(-93,58);
+        curveVertex(-128,-29);
+        curveVertex(49,-34);
+        curveVertex(53,30);
+        curveVertex(8,71);
+        curveVertex(-93,58);
+        curveVertex(-128,-29);
+        endShape();
+        popMatrix();
+
+        if(i === 50){
+        fill(222, 148, 96);
+        ellipse(164,177,200,42);
+        noStroke();
+        var num = 59;
+        for(var q = 0; q < num; q++){
+        fill(222-q*1.2, 148-q, 96-q);
+        ellipse(164,177,200-q*(130/num),42-q*(22/num));
+        }
+        noFill();
+        stroke(0,0,0);
+        ellipse(164,177,200,42);
+        }
+        popMatrix();
+        popMatrix();
+        }
+        intro.img = get();
+        }
+        function doIntro(){
+        intro.timer++;
+        background(171, 171, 171);
+        noFill();
+        strokeWeight(9);
+        stroke(0,0,0);
+        ellipse(178,265,200,80);
+        fill(171);
+        noStroke();
+        ellipse(178,259,200,80);
+        image(intro.img,0,0);
+        for(var i = 0; i < 10; i++){
+        pushMatrix();
+        fill(237, 237, 237, 255/10);
+        noStroke();
+        translate(173,176);
+        scale(0.7-(0.2/10)*i,0.2);
+        rotate(-18+intro.timer);
+        beginShape();
+        curveVertex(-55,-48); 
+        curveVertex(30,-72); 
+        curveVertex(-41,-16); 
+        curveVertex(-43,49); 
+        curveVertex(-75,-3); 
+        curveVertex(-55,-48); 
+        curveVertex(30,-72); 
+        curveVertex(-41,-16);
+        endShape();
+        popMatrix();
+        pushMatrix();
+        fill(237, 237, 237,255/10);
+        noStroke();
+        translate(173,176);
+        scale(-0.6-(0.2/10)*i,0.2);
+        rotate(-50-intro.timer);
+        beginShape();
+        curveVertex(-55,-48); 
+        curveVertex(30,-72); 
+        curveVertex(-41,-16); 
+        curveVertex(-43,49); 
+        curveVertex(-75,-3); 
+        curveVertex(-55,-48); 
+        curveVertex(30,-72); 
+        curveVertex(-41,-16);
+        endShape();
+        popMatrix();
+        }
+        textAlign(CENTER,CENTER);
+        fill(0,0,0);
+        textSize(30);
+        text('Brewing JS'.substring(0,(intro.timer-80)/(4)),220,100);
+        fill(250, 0, 71);
+        textSize(20);
+        text('Ackvonhey X Electric Dolphin'.substring(0,(intro.timer-80)),200,350);
+        if(intro.timer < 60){
+        noStroke();
+        fill(0,0,0,255-intro.timer*(255/60));
+        rect(-50,-50,500,500);
+        }
+        var num = 400;
+        if(intro.timer > num-60){
+        noStroke();
+        fill(0,0,0,(intro.timer-(num-60))*(255/60));
+        rect(-50,-50,500,500);
+        }
+        if(intro.timer >= num || (clicked&&intro.timer>=30)){
+        scene = 'menu';
+        }
+        }
+        loadIntro();
+
+
+
+        // bob lyon for the below 2 functions (edited by me to fit the game tho)
+        function nearestOnLine(ax, ay, bx, by) {
+          var dx = bx - ax; /* Vector from A to B (run) */
+          var dy = by - ay; /* ... (rise) */
+          var mag2 = dx * dx + dy * dy; /* Squared distance between A and B */
+
+          /* Find and return the nearest point on line AB to point P. */
+          var nearest = function(px, py) {
+            var a2pX = px - ax; /* Vector from A to P */
+            var a2pY = py - ay;
+            var a2pDota2b = a2pX * dx + a2pY * dy; /* AP ⦁ AB */
+            var t = a2pDota2b / mag2; /* Parametric distance from A to THE point */
+            var ret = {
+              x: ax + dx * t,
+              y: ay + dy * t
+            };
+
+            if (between(ret.x, ax, bx) && between(ret.y, ay, by)) {
+              return ret;
+            } else {
+              if (ret.x > ax && ret.x > bx) {
+                return {
+                  x: ax,
+                  y: ay,
+                };
+              } else if (ret.x < ax && ret.x < bx) {
+                return {
+                  x: ax,
+                  y: ay,
+                };
+              } else if (ret.y > ay && ret.y > by) {
+                return {
+                  x: ax,
+                  y: ay,
+                };
+              } else if (ret.y < ay && ret.y < by) {
+                return {
+                  x: ax,
+                  y: ay,
+                };
+              } else {
+                return {
+                  x: Infinity,
+                  y: Infinity,
+                };
+              }
+            }
+
+
+          };
+
+          return nearest;
+        }
+        
+
+        // chunk variables oooo
+        var chunks = [];
+        var chunkSize = 40;
+        var chunksIMG = [];
+        var chunkSizeIMG = 100;
+
+        var spectatingIndex = 0;
+
+        // chunk concept designed by me from another programs but modified heavily for this game
+
+        // yeah ik i reinvented the wheel but hey i learned something
+        function getChunk(x, y, size) {
+          return {
+            x: floor((x + 100000) / size),
+            y: floor((y + 100000) / size),
+          };
+        }
+        function giveChunk(x, y, e, chunk) {
+          if (!chunk[y]) {
+            chunk[y] = [];
+          }
+          if (!chunk[y][x]) {
+            chunk[y][x] = [];
+          }
+          if (!chunk[y][x].includes(e)) {
+            chunk[y][x].push(e);
+            if (!e.chunksIn) {
+              e.chunksIn = [];
+            }
+            // e.chunksIn.push({chunk:chunk,x:x,y:y});
+            // println('e');
+          }
+        }
+        function toRenderAt(x, y, chunk, size) {
+          var a = getChunk(x, y, size);
+          if (chunk[a.y]) {
+            if (chunk[a.y][a.x]) {
+              return chunk[a.y][a.x];
+            }
+          }
+          return [];
+        }
+        function fatRenderAt(wid, x, y, chunk, size) {
+          var ret = [];
+
+
+          for (var z = -wid; z < wid + 1; z++) {
+            for (var c = -wid; c < wid + 1; c++) {
+              // stroke(255, 0, 0);
+              // strokeWeight(4);
+              // point(x+(z*chunkSize),y+(c*chunkSize));
+              var rend = toRenderAt(x + (z * size), y + (c * size), chunk, size);
+              //println(x+(z*chunkSize)+' , '+y+(c*chunkSize));
+              for (var i = 0; i < rend.length; i++) {
+
+                //this.collide(rend[i]);
+                //println(rend[i][1].type);
+                if (!ret.includes(rend[i])) {
+                  ret.push(rend[i]);
+                }
+              }
+            }
+          }
+          return ret;
+        }
+        var numbersBetween = function(a, b) {
+          var ret = [];
+
+          //println(a+' , '+b);
+          if (a === b) {
+            ret.push(a);
+          } else {
+            ret.push(a);
+            ret.push(b);
+          }
+          if (a > b) {
+            for (var i = b; i < a; i += 1) {
+              ret.push(i);
+            }
+
+          }
+          if (b > a) {
+            for (var i = a; i < b; i += 1) {
+
+              ret.push(i);
+
+            }
+
+          }
+          return ret;
+        };
+        function getBetween(x, y, x2, y2) {
+          var ret = [];
+          //println(x+','+y+','+x2+','+y2);
+          for (var i = 0; i < numbersBetween(x, x2)
+            .length; i++) {
+            for (var q = 0; q < numbersBetween(y, y2)
+              .length; q++) {
+              ret.push({
+                x: numbersBetween(x, x2)[i],
+                y: numbersBetween(y, y2)[q],
+              });
+            }
+          }
+          return ret;
+        }
+        function setWallChunk(i) {
+
+          // collision chunks
+          // {
+          var pos = getChunk(walls[i].x, walls[i].y, chunkSize);
+          giveChunk(pos.x, pos.y, walls[i], chunks);
+          var chunkA = pos;
+          var chunkB = getChunk(walls[i].x + walls[i].w, walls[i].y + walls[i].h, chunkSize);
+          //println(pos.x+' , '+pos.y);
+          var between = getBetween(chunkA.x, chunkA.y, chunkB.x, chunkB.y);
+          for (var z = 0; z < between.length; z++) {
+            giveChunk(between[z].x, between[z].y, walls[i], chunks);
+          }
+          // }
+          // image chunks
+          // {
+          var pos = getChunk(walls[i].x, walls[i].y, chunkSizeIMG);
+          giveChunk(pos.x, pos.y, walls[i], chunksIMG);
+          var chunkA = pos;
+          var chunkB = getChunk(walls[i].x + walls[i].w, walls[i].y + walls[i].h, chunkSizeIMG);
+          //println(pos.x+' , '+pos.y);
+          var between = getBetween(chunkA.x, chunkA.y, chunkB.x, chunkB.y);
+          for (var z = 0; z < between.length; z++) {
+            giveChunk(between[z].x, between[z].y, walls[i], chunksIMG);
+          }
+          // }
+
+        }
+
+        // killfeed
+        var killfeed = {
+            messages: [],
+            addMessage: function(msg, time) {
+                this.messages.push({msg: msg, time: time || 240, startTime: time || 240});
+            },
+            displayMessages: function() {
+                textSize(18);
+                for (var i = 0; i < this.messages.length; i ++) {
+                    var msg = this.messages[i];
+                    fill(255, msg.time*3);
+                    noStroke();
+                    var txtWidth = textWidth(msg.msg);
+                    rect(570 - txtWidth - min((msg.startTime - msg.time)*30 - 600, 0), i*40 + 40, txtWidth + 20, 30, 10);
+                    fill(0, msg.time*3);
+                    textAlign(CENTER, CENTER);
+                    text(msg.msg, 580 - txtWidth/2 - min((msg.startTime - msg.time)*30 - 600, 0), i*40 + 55);
+                    msg.time --;
+                    if (msg.time < 0) {
+                        this.messages.splice(i, 1);
+                        i --;
+                    }
+                }
+            },
+        };
+
+        // shake with some ugly math
+        function tryShake(x, y, m) {
+          var d = dist(x, y, p.x, p.y);
+          var r = m * ((log(-d + 100) * 5000) / 10000);
+          if (r > 0) {
+            shake = r;
+          }
+        }
+        var effects = [];
+
+        // how long lazer cooldown is, adjusted many times
+        var lazerWait = 50;
+
+        // oooo effects
+        function effect(x, y, t, decay, update) {
+          this.x = x;
+          this.y = y;
+          this.vx = 0;
+          this.vy = 0;
+          this.life = 255;
+          this.decay = decay;
+          this.type = t;
+          // should be function that takes argument of self
+          this.update = update;
+          // should be function that takes argument of self
+          effects.push(this);
+        }
+        effect.prototype.draw = function() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.update(this);
+          pushMatrix();
+          translate(this.x, this.y);
+          switch (this.type) {
+            case 'target':
+              rotate(this.rot);
+              stroke(255, 0, 0, this.pulse);
+              noFill();
+              strokeWeight(6);
+              ellipse(0, 0, 40, 40);
+              line(0, -30, 0, -10);
+              line(0, 30, 0, 10);
+              line(-30, 0, -10, 0);
+              line(30, 0, 10, 0);
+              break;
+            case 'boom':
+              rotate(this.rot);
+              noStroke();
+              fill(0, 102, 255, this.life);
+              rect(-25, -25, 50, 50);
+              fill(0, 217, 255);
+              rect(-25, -15, 50, 30);
+              break;
+            case 'splat':
+              rotate(this.shineRot);
+              noStroke();
+              fill(200, 0, 0, (this.life / 255) * 100 + 155);
+              ellipse(0, 0, 2, 300);
+              break;
+            default:
+              noStroke();
+              fill(255, 0, 0);
+              ellipse(0, 0, 20, 20);
+              break;
+          }
+          popMatrix();
+          this.life -= this.decay;
+          if (this.life <= 0) {
+            for (var i = effects.length - 1; i > -1; i--) {
+              if (effects[i] === this) {
+                effects.splice(i, 1);
+              }
+            }
+          }
+        };
+
+        // how far something can see in a direction
+        var getDistance = function(x, y, a, incr, grassDoesHide, isLazer) {
+          // will change once walls are incorperated
+          var ret = 0;
+          var inc = incr || 20;
+          var max = 2000;
+          for (var i = 0; i < max; i += inc) {
+            ret = i;
+            var xt = x + cos(a) * i;
+            var yt = y + sin(a) * i;
+            var test = toRenderAt(xt, yt, chunks, chunkSize);
+            // stroke(255, 0, 0);
+            // strokeWeight(4);
+            // point(xt,yt);
+            if (test.length > 0) {
+              var d = false;
+              //println(test.length);
+              // if(grassDoesHide){
+              // println('e');
+              // }
+              //println(isLazer);
+              for (var q = 0; q < test.length; q++) {
+                if (!(test[q].data.noLazerCollide === true && isLazer)) {
+                  if (((!test[q].data.noShadow) || grassDoesHide)) {
+                    if (xt >= test[q].x && xt <= test[q].x + test[q].w && yt >= test[q].y && yt <= test[q].y + test[q].h) {
+                      d = true;
+                      if (test[q].checkColl({
+                          x: x,
+                          y: y
+                        }) && test[q].data.noCollide) {
+                        d = false;
+                      }
+                    }
+                  }
+                }
+              }
+              if (d === true) {
+                break;
+              }
+            }
+          }
+          if (ret > max) {
+            ret = max;
+          }
+          return ret;
+        };
+
+        function projectBeam(e) {
+          var angle = atan2(e.point.y - e.y, e.point.x - e.x);
+          var d = getDistance(e.x + cos(angle) * 40, e.y + sin(angle) * 40, angle, 8, false, true);
+          pushMatrix();
+          translate(e.x, e.y);
+          noStroke();
+          fill(173, 0, 0, 160 + sin(frameCount * 10) * 20);
+          rotate(angle);
+          rect(40, -25, d, 50);
+          popMatrix();
+          var a = {
+            x1: e.x + cos(angle) * 40,
+            y1: e.y + sin(angle) * 40,
+            x2: e.x + cos(angle) * d,
+            y2: e.y + sin(angle) * d
+          };
+          lazerProjections.push({
+            x1: a.x1,
+            y1: a.y1,
+            x2: a.x2,
+            y2: a.y2,
+            find: nearestOnLine(a.x1, a.y1, a.x2, a.y2),
+            owner: e
+          });
+        }
+        function getSkinColor(skin){
+            if (skin === 0) {
+              fill(255, 36, 36);
+            } else if (skin === 1) {
+              fill(116, 255, 69);
+            } else if (skin === 2){
+              fill(255, 208, 0);
+            } else {
+              fill(255, 112, 214);  
+            }
+        }
+
+        // if a point can be seen from another point
+        function canSee(a, b, c, d, grassDoesHide) {
+          if (abs(a - c) <= 320 && abs(b - d) <= 320) {
+            var angle = atan2(d - b, c - a);
+            var d2 = dist(a, b, c, d);
+            if (d2 <= getDistance(a, b, angle, 10, grassDoesHide)) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        // bunch of player stuff
+        fruit.prototype.getHit = function() {
+          tryShake(this.x, this.y, 15);
+          var d = function(e) {
+            e.mag = lerp(e.mag, 0, 0.05);
+            e.vx = cos(e.ang) * e.mag;
+            e.vy = sin(e.ang) * e.mag;
+          };
+          for (var i = 0; i < 20; i++) {
+            var angle = random(0, 360);
+            var mag = random(0, 5);
+            var e = new effect(this.x + random(-20, 20), this.y + random(-20, 20), 'splat', 255 / 40, d);
+            e.vx = cos(angle) * mag;
+            e.vy = sin(angle) * mag;
+            if (i / 2 === round(i / 2)) {
+              e.shineRot = 90;
+            } else {
+              e.shineRot = 0;
+            }
+            e.mag = mag;
+            e.ang = angle;
+
+          }
+          this.toRemove = true;
+        };
+        fruit.prototype.remove = function() {
+          for (var i = fruits.length - 1; i > -1; i--) {
+            if (fruits[i] === this) {
+              fruits.splice(i, 1);
+            }
+          }
+        };
+        fruit.prototype.doLazer = function() {
+          tryShake(this.x, this.y, 5);
+          if (this === p) {
+            cam.zoom *= 0.8;
+          }
+          var angle = atan2(this.point.y - this.y, this.point.x - this.x);
+          var d = getDistance(this.x, this.y, angle, undefined, false, true);
+          var d2 = function() {
+
+          };
+          var final = 0;
+          for (var i = 60; i < d - 20; i += 49) {
+            var e = new effect(this.x + cos(angle) * i, this.y + sin(angle) * i, 'boom', 255 / 10, d2);
+            e.rot = angle;
+            final = i;
+          }
+
+          var d3 = nearestOnLine(this.x + cos(angle) * 60, this.y + sin(angle) * 60, this.x + cos(angle) * final, this.y + sin(angle) * final);
+          for (var i = fruits.length - 1; i > -1; i--) {
+            if (fruits[i] !== this) {
+              var num = d3(fruits[i].x, fruits[i].y);
+              if (dist(num.x, num.y, fruits[i].x, fruits[i].y) <= 45) {
+                fruits[i].getHit();
+                killfeed.addMessage(this.name + " blasted " + fruits[i].name);
+                this.blasts ++;
+              }
+            }
+          }
+          this.totBlasts ++;
+
+        };
+        fruit.prototype.draw = function() {
+          pushMatrix();
+          translate(this.x, this.y);
+          this.clawSpin = lerp(this.clawSpin, 90, 0.1);
+          if (this.clawSpin > 120) {
+            for (var i = fruits.length - 1; i > -1; i--) {
+              if (fruits[i] !== this) {
+                // prevent dual knockouts
+                if (this.clawSpin >= fruits[i].clawSpin) {
+                  if (dist(this.x, this.y, fruits[i].x, fruits[i].y) <= 75) {
+                    fruits[i].getHit();
+                    killfeed.addMessage(this.name + " bopped " + fruits[i].name);
+                    this.bops ++;
+                  }
+                }
+              }
+            }
+          }
+          this.dir = lerp(this.dir, this.toDir, 0.1);
+          //scale(this.dir,1);
+          //scale(3);
+          if (!this.anim || (this.anim === 'lazer'&&!this.prepLazer)) {
+            this.anim = 'idle';
+          }
+          if (this.noMove <= 0 && this.prepLazer) {
+            this.doLazer();
+            this.anim = 'idle';
+            this.prepLazer = false;
+          }
+          switch (this.anim) {
+            case 'move': {
+              this.wave = 20;
+              this.waveSpeed = 10;
+              this.legCycle = 90 + frameCount * 6;
+              this.legHeight = 6;
+              this.legBase = 25;
+            }
+            break;
+            case 'lazer':
+              this.wave = -90;
+              this.waveSpeed = 0;
+              this.legCycle = 90 + frameCount * 0;
+              this.legHeight = 5;
+              this.legBase = 30;
+              break;
+            default: {
+              this.wave = 10;
+              this.waveSpeed = 2;
+              this.legCycle = 90 + frameCount * 0;
+              this.legHeight = 5;
+              this.legBase = 30;
+            }
+            break;
+          }
+          if (this.anim !== 'lazer') {
+            this.anim = 'idle';
+          }
+
+          if (!(!(canSee(p.x, p.y, this.x, this.y, true)) && this.hidden)) {
+            stroke(0, 0, 0);
+            pushMatrix();
+
+            //feet
+            pushMatrix();
+            scale(this.dir, 1);
+            getSkinColor(this.skin);
+            strokeWeight(4);
+            stroke(0, 0, 0);
+            pushMatrix();
+            this.TL = {
+              x: sin(this.legCycle) * -15,
+              y: this.CL.b + cos(this.legCycle) * -this.legHeight,
+              b: this.legBase
+            };
+            this.CL.x = lerp(this.CL.x, this.TL.x, 0.1);
+            this.CL.y = lerp(this.CL.y, this.TL.y, 0.1);
+            this.CL.b = lerp(this.CL.b, this.TL.b, 0.1);
+            translate(this.CL.x, this.CL.y);
+            if (this.legCycle % 360 > 90 && this.legCycle % 360 <= 270) {
+              //translate(sin(this.legCycle)*-15,30);
+            } else {
+              rotate(-sin(this.legCycle) / 2 * 360 + 180);
+            }
+            arc(0, 0, 16, 16, 180, 360);
+            line(-8, 0, 8, 0);
+            popMatrix();
+            pushMatrix();
+            translate(-this.CL.x, this.CL.b - (this.CL.y - this.CL.b));
+            if (this.legCycle % 360 > 270 || this.legCycle % 360 <= 90) {
+              //translate(sin(this.legCycle)*15,30);
+            } else {
+              rotate(sin(this.legCycle) / 2 * 360 + 180);
+            }
+            arc(0, 0, 16, 16, 180, 360);
+            line(-8, 0, 8, 0);
+            popMatrix();
+            popMatrix();
+
+            // apple and face
+
+            this.TW = cos(frameCount * this.waveSpeed);
+            this.CW = lerp(this.CW, this.TW, 0.1);
+            this.CW2 = sin(90 - acos(this.CW));
+
+            translate(0, this.CW * 4);
+            pushMatrix();
+            scale(this.dir, 1);
+            pushMatrix();
+            translate(-24, this.CW * 2);
+            rotate(-10);
+            scale(-1, 1);
+            fill(199, 199, 199);
+            strokeWeight(3);
+            triangle(3, -13, 3, 3, -8, 2);
+            popMatrix();
+            strokeWeight(4);
+            getSkinColor(this.skin);
+            ellipse(0, 0, 40, 40);
+            fill(199, 199, 199);
+            strokeWeight(3);
+            pushMatrix();
+            translate(0, this.CW * 2);
+            triangle(3, -13, 3, 3, -8, 2);
+            strokeWeight(3);
+            quad(4, 17, 0, 10, -22, 10, -29, 15);
+
+            popMatrix();
+            popMatrix();
+
+            // apple stem
+            noStroke();
+            fill(23, 125, 0);
+            pushMatrix();
+            translate(-4 * this.dir, -23);
+            rotate((-20 + this.CW2 * 10) * this.dir);
+            ellipse(0, 0, 5, 10);
+            popMatrix();
+            strokeWeight(4);
+            stroke(94, 43, 17);
+            line(-3 * this.dir, -16, 4 * this.dir, -28);
+
+            // claws
+            pushMatrix();
+            rotate((90 - this.clawSpin) * this.onSpinDir);
+            //scale(cos((90-this.clawSpin)/2),1);
+            pushMatrix();
+
+            translate(25 + 5 / 2 + (5 / 2) * -this.dir, 0);
+            rotate(this.CW2 * this.wave);
+            claw(0, 0, this.skin);
+            popMatrix();
+            pushMatrix();
+            translate(-25 - 5 / 2 - (5 / 2) * this.dir, 0);
+            rotate(this.CW2 * -this.wave);
+            scale(-1, 1);
+            claw(0, 0, this.skin);
+            popMatrix();
+            popMatrix();
+            popMatrix();
+            if (scene === "game") {
+              fill(255);
+              textSize(18);
+              textAlign(CENTER);
+              text(this.name, 0, -40 + this.CW*3);
+            }
+
+          }
+
+          popMatrix();
+        };
+        fruit.prototype.move = function() {
+          if (dist(this.x, this.y, this.target.x, this.target.y) >= 15 && this.noMove <= 0) {
+            var angle = atan2(this.target.y - this.y, this.target.x - this.x);
+            this.vx = lerp(this.vx, cos(angle) * 4, 0.1);
+            this.vy = lerp(this.vy, sin(angle) * 4, 0.1);
+            if (this.vx < 0) {
+              this.toDir = 1;
+            } else {
+              this.toDir = -1;
+            }
+            this.activeMoving = true;
+          }
+        };
+        fruit.prototype.bop = function() {
+          if (this.noMove <= 0) {
+            tryShake(this.x, this.y, 1);
+            this.noMove = 40;
+            this.clawSpin = 270 + 180;
+            this.onSpinDir = this.toDir;
+            this.totBops ++;
+          }
+        };
+        fruit.prototype.lazer = function() {
+          if (this.noMove <= 0 && !this.prepLazer) {
+            this.noMove = lazerWait;
+            this.prepLazer = true;
+            this.point = this.target;
+            var e = new effect(this.target.x, this.target.y, 'target', 255 / lazerWait, function(e) {
+              e.pulse = 180 + sin(frameCount * 15) * 75;
+              if (e.owner.toRemove) {
+                this.life = 0;
+              }
+            });
+            e.rot = atan2(this.point.y - this.y, this.point.x - this.x);
+            e.owner = this;
+            this.anim = 'lazer';
+          }
+        };
+        fruit.prototype.physics = function() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (abs(this.vx) > 0.5 || abs(this.vy) > 0.5) {
+            if (this.anim !== 'lazer') {
+              this.anim = 'move';
+            }
+          }
+          this.noMove--;
+          if (!this.activeMoving) {
+            this.vx = lerp(this.vx, 0, 0.1);
+            this.vy = lerp(this.vy, 0, 0.1);
+          }
+          this.activeMoving = false;
+        };
+        fruit.prototype.doCollisions = function() {
+          var todo = fatRenderAt(25 / chunkSize, this.x, this.y, chunks, chunkSize);
+          for (var i = 0; i < todo.length; i++) {
+            todo[i].collide(this);
+          }
+        };
+
+        // a lot of pain went into this function
+        // ugly code but it works awesome
+        fruit.prototype.doAi = function() {
+
+          var noTryMove = false;
+          this.hidden = false;
+          if (!this.forgetTimer) {
+            this.forgetTimer = 0;
+          }
+          if (!this.forgetHideTimer) {
+            this.forgetHideTimer = 0;
+          }
+          if (!this.drift) {
+            this.drift = 0;
+            this.driftV = 0;
+          }
+          // finding player targets
+          if (this.forgetTimer <= 0 || this.lookForNew) {
+            if (round(random(0, 2)) === 2 || this.lookForNew) {
+              for (var i = 0; i < fruits.length; i++) {
+                if (fruits[i] !== this) {
+                  if (this.lookForNew || round(random(0, (log(dist(this.x, this.y, fruits[i].x, fruits[i].y) / 1000) + 3) * 15)) <= 2) {
+                    if (canSee(this.x, this.y, fruits[i].x, fruits[i].y, true)) {
+                      this.targetP = fruits[i];
+                      this.aX = fruits[i].x;
+                      this.aY = fruits[i].y;
+                      this.aVX = fruits[i].vx;
+                      this.aVY = fruits[i].vy;
+                    }
+                  }
+                }
+              }
+            }
+          } else {
+            this.forgetTimer--;
+          }
+          this.forgetHideTimer--;
+
+          this.lookForNew = false;
+
+          // if it has a player target
+          if (this.targetP) {
+            if (this.targetP.player) {
+              // give bots drift and more realistic look
+              if (round(random(0, 60)) === 5) {
+                this.drift = 0;
+                this.driftV = random(-4,4);
+              }
+              this.drift += this.driftV;
+              this.target = {
+                x: this.aX,
+                y: this.aY
+              };
+              // if it can actually see the player target and isn't jsut walking towards assumed position
+              if (canSee(this.x, this.y, this.targetP.x, this.targetP.y)) {
+                // update assumed position
+                this.aX = this.targetP.x;
+                this.aY = this.targetP.y;
+                this.aVX = this.targetP.vx;
+                this.aVY = this.targetP.vy;
+                this.target = {
+                  x: this.aX,
+                  y: this.aY
+                };
+                var a = atan2(this.target.y - this.y, this.target.x - this.x);
+                var num = 0;
+                if(this.playstyle.dirMod){
+                num = this.playstyle.dirMod;
+                }
+                this.target = {
+                  x: this.x + cos(a + this.drift+(180*num)) * 50,
+                  y: this.y + sin(a + this.drift+(180*num)) * 50,
+                };
+                // fight
+                var d = dist(this.x, this.y, this.aX, this.aY);
+                var v = sqrt(pow(this.vx, 2) + pow(this.vy, 2));
+                if (d < 30 + random(0, this.playstyle.bopAggro) / 4 + 15 * v) {
+                  this.bop();
+                } else if (d > 200 + random(-this.playstyle.lazerAggro,this.playstyle.lazerAggro)) {
+                  if (round(random(0, 60)) === 2) {
+                    var num = random(0, lazerWait);
+                    this.target = {
+                      x: this.aX + this.aVX * num,
+                      y: this.aY + this.aVY * num
+                    };
+                    this.lazer();
+                  }
+                } else {
+                  this.target = {
+                    x: this.aX,
+                    y: this.aY
+                  };
+                }
+
+              }
+
+
+
+              if ((dist(this.x, this.y, this.aX, this.aY) <= 20 && !(this.aX === this.targetP.x && this.aY === this.targetP.y)) || this.colCount > 60 || this.targetP.toRemove) {
+                // forget
+                this.targetP = false;
+                this.forgetTimer = 30;
+                this.colCount = 0;
+                if (this.targetP.toRemove) {
+                  this.lookForNew = true;
+                }
+                //println(this.colCount);
+              }
+
+            }
+          } else if (this.targetH) {
+
+            // if it has some hiding place as a target
+
+            var center = {
+              x: this.targetH.x + this.targetH.w / 2,
+              y: this.targetH.y + this.targetH.h / 2
+            };
+            if (this.targetH.checkColl(this)) {
+              this.hidden = true;
+            }
+
+            // high alert
+            this.lookForNew = true;
+
+            if (dist(this.x, this.y, center.x, center.y) > 5) {
+              this.target = center;
+              var a = atan2(this.target.y - this.y, this.target.x - this.x);
+              this.target = {
+                x: this.x + cos(a) * 50,
+                y: this.y + sin(a) * 50
+              };
+            } else {
+              noTryMove = true;
+              if (round(random(0, this.playstyle.bushStay)) === 2) {
+                this.forgetHideTimer = 300;
+                this.targetH = false;
+                this.lookForNew = true;
+              }
+            }
+            if (this.colCount > 60) {
+              this.forgetHideTimer = 300;
+              this.targetH = false;
+              this.lookForNew = true;
+            }
+
+          } else {
+
+            // if it doesn't have a target
+            // wander I guess?
+
+            if (round(random(0, 80)) === 5) {
+              this.drift = random(0, 360);
+              this.driftV = random(-3, 3);
+            }
+            // give bots drift and more realistic look
+            this.drift += this.driftV;
+            this.target = {
+              x: this.x + cos(this.drift) * 50,
+              y: this.y + sin(this.drift) * 50
+            };
+            // look for hiding every now and then
+            if (round(random(0, this.playstyle.bushLook)) === 2 && this.forgetHideTimer <= 0) {
+              var todo = fatRenderAt(400 / chunkSizeIMG, this.x, this.y, chunksIMG, chunkSizeIMG);
+              for (var i = 0; i < todo.length; i++) {
+                if (todo[i].data.noCollide) {
+                  if (round(random(0, 3)) === 2) {
+                    if (canSee(this.x, this.y, todo[i].x, todo[i].y)) {
+                      this.targetH = todo[i];
+                      i = todo.length + 1;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+
+          }
+
+          // lazer avoidance
+
+          for (var i = 0; i < lazerProjections.length; i++) {
+            if (lazerProjections[i].owner !== this) {
+              // nearest point on lazer line
+              var nearest = lazerProjections[i].find(this.x, this.y);
+              if (dist(this.x, this.y, nearest.x, nearest.y) <= 90) {
+                var a = atan2(nearest.y - this.y, nearest.x - this.x);
+                // angle directly away from lazer
+                var away = a - 180;
+                // angle currently going
+                var cur = atan2(this.target.y - this.y, this.target.x - this.x);
+                // between two angles
+                var compromise = away + cur / 2;
+                this.target = {
+                  x: this.x + cos(compromise) * 50,
+                  y: this.y + sin(compromise) * 50
+                };
+                this.targetP = lazerProjections[i].owner;
+                this.aX = lazerProjections[i].owner.x;
+                this.aY = lazerProjections[i].owner.y;
+                i = lazerProjections.length + 1;
+                break;
+              }
+            }
+          }
+
+
+          if (!noTryMove && fruits.length > 1) {
+            //if(random(-1,1)<0){
+            this.move();
+            //}
+          }
+
+          if (this.colCount > 0) {
+            this.colCount--;
+            if (this.forgetTimer > 0) {
+              this.colCount = 0;
+            }
+          }
+
+        };
+
+
+        function circleRectCollide(cX, cY, cD, rX, rY, rW, rH) {
+          return dist(cX, cY, constrain(cX, rX, rX + rW), constrain(cY, rY, rY + rH)) < cD / 2;
+        }
+
+        // make wall images
+        var wallImgs = [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          // that's enough nested arrays i think
+        ];
+        var grassTransparent;
+        var coolBg;
+        var coolBg2;
+
+        // dirt
+        for (var i = 0; i < 5; i++) {
+          noStroke();
+          var noiseRandom = random(100);
+          for (var j = 0; j < 50; j++) {
+            for (var k = 0; k < 50; k++) {
+              fill(noise(j / 10 + noiseRandom, k / 10) * 80 + 60 + random(-10, 10), noise(j / 10 + noiseRandom + 10, k / 10) * 30 + 30, 0);
+              rect(j, k, 1, 1);
+            }
+          }
+          stroke(0);
+          strokeWeight(5);
+          fill(0, 0);
+          rect(2, 2, 50, 50);
+          wallImgs[0][i] = get(0,0,55,55);
+
+        }
+        // dirt no border
+        for (var i = 0; i < 5; i++) {
+          noStroke();
+          var noiseRandom = random(100);
+          for (var j = 0; j < 51; j++) {
+            for (var k = 0; k < 51; k++) {
+              fill(noise(j / 10 + noiseRandom, k / 10) * 80 + 60 + random(-10, 10), noise(j / 10 + noiseRandom + 10, k / 10) * 30 + 30, 0);
+              rect(j, k, 1, 1);
+            }
+          }
+          noStroke();
+          fill(0, 0);
+          rect(2, 2, 50, 50);
+          wallImgs[1][i] = get(0,0,50,50);
+
+        }
+        // gray
+        background(171, 171, 171);
+        wallImgs[2].push(get());
+        // grass
+        {
+          background(0, 0, 0);
+          background(255, 255, 255, 0);
+          pushMatrix();
+          translate(-26, 28);
+          scale(1.2);
+          for (var i = 1; i < 9; i++) {
+            for (var q = 1; q < 8; q++) {
+              strokeWeight(65);
+              var a = 10;
+              stroke(26 + random() * a, 145 + random() * a, 28 + random() * a);
+              line(i * 60 + sin(q * 12345) * 5, q * 60 - 50, i * 60 + sin(q * 12345) * 5, q * 60 + 20);
+            }
+          }
+          popMatrix();
+        }
+        wallImgs[3].push(get());
+        // grass transparent
+        {
+          background(0, 0, 0);
+          background(255, 255, 255, 0);
+          pushMatrix();
+          translate(-26, 28);
+          scale(1.2);
+          for (var i = 1; i < 9; i++) {
+            for (var q = 1; q < 8; q++) {
+              strokeWeight(65);
+              var a = 10;
+              stroke(26 + random() * a, 145 + random() * a, 28 + random() * a, 90);
+              line(i * 60 + sin(q * 12345) * 5, q * 60 - 50, i * 60 + sin(q * 12345) * 5, q * 60 + 20);
+            }
+          }
+          popMatrix();
+        }
+        grassTransparent = get();
+        // crate
+        {
+          background(255, 255, 255);
+          background(255, 255, 255, 0);
+          var sw = 54;
+          strokeWeight(sw);
+          stroke(0, 0, 0);
+          fill(145, 79, 13);
+          rect(sw / 2, sw / 2, 600 - sw, 600 - sw, 100);
+          line(50, 50, 550, 550);
+          line(550, 50, 50, 550);
+        }
+        wallImgs[4].push(get());
+        // water
+        for (var i = 0; i < 5; i++) {
+          noStroke();
+          var noiseRandom = random(100);
+          for (var j = 0; j < 51; j++) {
+            for (var k = 0; k < 51; k++) {
+              fill(0, noise(j / 10 + noiseRandom + 10, k / 10) * 30 + 90, noise(j / 10 + noiseRandom, k / 10) * 80 + 150 + random(-10, 10));
+              rect(j, k, 1, 1);
+            }
+          }
+          noStroke();
+          fill(0, 0);
+          rect(2, 2, 50, 50);
+          wallImgs[5][i] = get(0,0,50,50);
+
+        }
+        // cool background
+        {
+        background(115, 255, 162);
+            var a = [
+            '..........',
+            '..www.....',
+            '..........',
+            '........c.',
+            '.....=....',
+            '.=........',
+            '.......c..',
+            '......cc..',
+            '---......=',
+            '----.....=',
+            ];
+            for(var i = 0; i < a.length; i++){
+            for(var q = 0; q < a[i].length; q++){
+            var n = false;
+            if(a[i][q] === 'w'){
+                n = 1;
+            }
+            if(a[i][q] === '='){
+                n = 3;
+            }
+            if(a[i][q] === 'c'){
+                n = 4;
+            }
+            if(a[i][q] === 'g'){
+                n = 2;
+            }
+            if(a[i][q] === '-'){
+                n = 5;
+            }
+            if(n || n === 0){
+            if(wallImgs[n]){
+            var num = 60;
+            if(n === 3){
+            num = 68;
+            }
+            image(wallImgs[n][floor(random(0,wallImgs[n].length))],q*60-(num-60)/2,i*60-(num-60)/2,num,num);
+            }
+            }
+            }
+            }
+            filter(BLUR,2.5);
+            coolBg = get();
+        }
+        // cool background 2
+        {
+        background(115, 255, 162);
+            var a = [
+            '.......---',
+            '..cc.....-',
+            '..........',
+            '..........',
+            'c.........',
+            'c.........',
+            '........w.',
+            '...==...w.',
+            '..==......',
+            '........--',
+            ];
+            for(var i = 0; i < a.length; i++){
+            for(var q = 0; q < a[i].length; q++){
+            var n = false;
+            if(a[i][q] === 'w'){
+                n = 1;
+            }
+            if(a[i][q] === '='){
+                n = 3;
+            }
+            if(a[i][q] === 'c'){
+                n = 4;
+            }
+            if(a[i][q] === 'g'){
+                n = 2;
+            }
+            if(a[i][q] === '-'){
+                n = 5;
+            }
+            if(n || n === 0){
+            if(wallImgs[n]){
+            var num = 60;
+            if(n === 3){
+            num = 68;
+            }
+            image(wallImgs[n][floor(random(0,wallImgs[n].length))],q*60-(num-60)/2,i*60-(num-60)/2,num,num);
+            }
+            }
+            }
+            }
+            filter(BLUR,1.5);
+            coolBg2 = get();
+        }
+        // stores wall type and data
+        var wallGraphics = {
+          dirt: {
+            data: wallImgs[0],
+            leeway: [2.5, 2.5],
+            wallData: {},
+          },
+          dirtNoBorder: {
+            data: wallImgs[1],
+            leeway: [1, 1],
+            wallData: {},
+          },
+          gray: {
+            data: wallImgs[2],
+            leeway: [2, 2],
+            wallData: {},
+          },
+          grass: {
+            data: wallImgs[3],
+            leeway: [8, 8],
+            wallData: {
+              noShadow: true,
+              noCollide: true,
+              insideImg: grassTransparent
+            },
+          },
+          crate: {
+            data: wallImgs[4],
+            leeway: [0, 0],
+            wallData: {
+              noLazerCollide: true,
+              noShadow: true,
+              behind: true,
+            },
+          },
+          water: {
+            data: wallImgs[5],
+            leeway: [1, 1],
+            wallData: {
+              noLazerCollide: true,
+              noShadow: true,
+              behind: true,
+            },
+          },
+        };
+
+        // walls
+        function wall(x, y, w, h, g) {
+          this.x = x;
+          this.y = y;
+          this.w = w;
+          this.h = h;
+          this.data = wallGraphics[g].wallData;
+          this.id = random(0, 100000000);
+          if (!this.data) {
+            this.data = {};
+          }
+          //println(this.data);
+          this.img = wallGraphics[g].data[~~random(wallGraphics[g].data.length)];
+          this.imgLeeway = wallGraphics[g].leeway;
+          walls.push(this);
+        }
+        wall.prototype.draw = function() {
+          fill(100, 65, 0);
+          stroke(0);
+          strokeWeight(5);
+          // rect(this.x, this.y, this.w, this.h);
+          var img = this.img;
+          if (this.data.noCollide) {
+            if (this.data.insideImg) {
+              if (this.checkColl(p)) {
+                img = this.data.insideImg;
+                // println(this.id+' , '+frameCount);
+              }
+            }
+          }
+          image(img, this.x - this.imgLeeway[0] / 2, this.y - this.imgLeeway[1] / 2, this.w + this.imgLeeway[0], this.h + this.imgLeeway[1]);
+        };
+        function drawWalls(x, y, shadowTarg, behind) {
+          // 400 default, raise to see whole map
+          var todo = fatRenderAt(400 / chunkSizeIMG, x, y, chunksIMG, chunkSizeIMG);
+          for (var i = 0; i < todo.length; i++) {
+            if (todo[i].data.noShadow && todo[i].data.behind === behind) {
+              todo[i].draw();
+            }
+          }
+          if(shadowTarg){
+            for (var i = 0; i < todo.length; i++) {
+            if(todo[i].data.behind === behind){
+            todo[i].shadow(shadowTarg);
+            }
+            }
+          }
+          for (var i = 0; i < todo.length; i++) {
+            if (!todo[i].data.noShadow && todo[i].data.behind === behind) {
+              todo[i].draw();
+            }
+          }
+        }
+        wall.prototype.isInside = function(w) {
+          if (w.x >= this.x && w.x <= this.x + this.w && w.y >= this.y && w.y <= this.y + this.h) {
+            return true;
+          }
+          return false;
+        };
+        wall.prototype.checkColl = function(fruit) {
+          return circleRectCollide(fruit.x, fruit.y, 40, this.x, this.y, this.w, this.h);
+        };
+        wall.prototype.collide = function(fruit) {
+          if (!this.data.noCollide) {
+            if (this.checkColl(fruit)) {
+              // Placeholder text
+              // text("Colliding", fruit.x, fruit.y - 50);
+
+              // for ai
+              if (fruit.colCount < 65) {
+                fruit.colCount += 2;
+              }
+
+              // If the fruit's x is in between the wall's x coordinates, then we can assume it's touching a horizontal edge.
+              if (fruit.x > this.x && fruit.x < this.x + this.w) {
+                if (fruit.y > this.y + this.h / 2) {
+                  fruit.y = this.y + this.h + 20;
+                } else {
+                  fruit.y = this.y - 20;
+                }
+                fruit.vy = 0;
+                return;
+              }
+              // If the fruit's y is in between the wall's y coordinates, then we can assume it's touching a vertical edge.
+              if (fruit.y > this.y && fruit.y < this.y + this.h) {
+                if (fruit.x > this.x + this.w / 2) {
+                  fruit.x = this.x + this.w + 20;
+                } else {
+                  fruit.x = this.x - 20;
+                }
+                fruit.vx = 0;
+                return;
+              }
+
+              // There are still some edge cases (or I guess "corner cases") which we have to sort out.
+
+              if (fruit.x < this.x + this.w / 2) {
+                // Bottom left corner
+                if (fruit.y > this.y + this.h / 2) {
+                  //text("Colliding 2", fruit.x, fruit.y - 50);
+                  var ang = atan2(this.y + this.h - fruit.y, this.x - fruit.x);
+                  fruit.x = this.x - cos(ang) * 20;
+                  fruit.y = this.y + this.h - sin(ang) * 20;
+                }
+
+                // Top left corner
+                if (fruit.y < this.y + this.h / 2) {
+                  //text("Colliding 2", fruit.x, fruit.y - 50);
+                  var ang = atan2(this.y - fruit.y, this.x - fruit.x);
+                  fruit.x = this.x - cos(ang) * 20;
+                  fruit.y = this.y - sin(ang) * 20;
+                }
+              }
+
+              if (fruit.x > this.x + this.w / 2) {
+                // Bottom right corner
+                if (fruit.y > this.y + this.h / 2) {
+                  //text("Colliding 2", fruit.x, fruit.y - 50);
+                  var ang = atan2(this.y + this.h - fruit.y, this.x + this.w - fruit.x);
+                  fruit.x = this.x + this.w - cos(ang) * 20;
+                  fruit.y = this.y + this.h - sin(ang) * 20;
+                }
+
+                // Top right corner
+                if (fruit.y < this.y + this.h / 2) {
+                  //text("Colliding 2", fruit.x, fruit.y - 50);
+                  var ang = atan2(this.y - fruit.y, this.x + this.w - fruit.x);
+                  fruit.x = this.x + this.w - cos(ang) * 20;
+                  fruit.y = this.y - sin(ang) * 20;
+                }
+              }
+            }
+          }
+        };
+        wall.prototype.shadow = function(fruit) {
+          if (!this.data.noShadow) {
+            var points = [{
+                x: this.x,
+                y: this.y
+              },
+              {
+                x: this.x + this.w,
+                y: this.y
+              },
+              {
+                x: this.x + this.w,
+                y: this.y + this.h
+              },
+              {
+                x: this.x,
+                y: this.y + this.h
+              },
+            ];
+            noStroke();
+            fill(0, 0, 0);
+            var extreme = 10000;
+            for (var i = 0; i < points.length; i++) {
+              var dir = atan2(points[i].y - fruit.y, points[i].x - fruit.x);
+              var dir2;
+              if (points[i + 1]) {
+                dir2 = atan2(points[i + 1].y - fruit.y, points[i + 1].x - fruit.x);
+              } else {
+                dir2 = atan2(points[0].y - fruit.y, points[0].x - fruit.x);
+              }
+              beginShape();
+              vertex(points[i].x, points[i].y);
+              vertex(points[i].x + cos(dir) * extreme, points[i].y + sin(dir) * extreme);
+              if (points[i + 1]) {
+                vertex(points[i + 1].x + cos(dir2) * extreme, points[i + 1].y + sin(dir2) * extreme);
+                vertex(points[i + 1].x, points[i + 1].y);
+              } else {
+                vertex(points[0].x + cos(dir2) * extreme, points[0].y + sin(dir2) * extreme);
+                vertex(points[0].x, points[0].y);
+              }
+              endShape(CLOSE);
+            }
+          }
+        };
+
+        var maps = [
+            // testing map, don't use
+            {
+            name: 'testing',
+            numPlayers: 5,
+            getPlayerStartPosition: function(i) {
+              return {
+                x: random(50, 1000),
+                y: random(50, 1000),
+              };
+            },
+            load: function() {
+              var a = [
+                'wwwwwwwwwwwwwwwwwwwwww',
+                'w                    w',
+                'w                    w',
+                'w             w      w',
+                'w            w       w',
+                'w           w        w',
+                'w          w         w',
+                'w                    w',
+                'w                    w',
+                'w  wwwwwwwwww        w',
+                'w                    w',
+                'w                    w',
+                'w    w  w  wwwwwww   w',
+                'w    w  w     w      w',
+                'w    w  w     w      w',
+                'w    wwww     w      w',
+                'w    w  w     w      w',
+                'w    w  w     w      w',
+                'w    w  w  wwwwwww   w',
+                'w                    w',
+                'w                    w',
+                'wwwwwwwwwwwwwwwwwwwwww',
+
+              ];
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  if (a[i][q] === 'w') {
+                    var h = new wall(q * 50, i * 50, 50, 50, 'dirt');
+                  }
+                }
+              }
+            },
+
+          },
+            {
+                name: "Random",
+                numPlayers: "?",
+            },
+          {
+            name: 'Star',
+            numPlayers: 6,
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 300;
+                  y = 150;
+                  break;
+                case 1:
+                  x = 15 * 50 + 25;
+                  y = 550;
+                  break;
+                case 2:
+                  x = 1250;
+                  y = 150;
+                  break;
+                case 3:
+                  x = 15 * 50;
+                  y = 1200;
+                  break;
+                case 4:
+                  x = 100;
+                  y = 1000;
+                  break;
+                case 5:
+                  x = 1450;
+                  y = 1000;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '...............w..............',
+                '.........................cc...',
+                '..........................c...',
+                '..........===w...w==..........',
+                '....c.....===w...w==..........',
+                '...cc.........................',
+                '..............................',
+                '...........w.......w..........',
+                '.wwwwwwwwwww...w...wwwwwwwwww.',
+                'w...===...w.........w...===..w.',
+                'w...===...w.........w...===..w.',
+                '.........w.....=.....w........',
+                '.www.....w....===....w....www.',
+                '........w.....ccc.....w.......',
+                '....www.w.............wwww....',
+                '...........................===',
+                '.===...www..........wwww....==',
+                '.===........................==',
+                '.== ..w...www....www....w.....',
+                '..............................',
+                '.....c........cc.........c....',
+                '..............................',
+                '....w.......ww..ww........w...',
+                '..............................',
+                '...w.....cc........cc......w..',
+                '..............w...............',
+                '..w...ww.......w......ww....w.',
+                '...............w..............',
+                '.www.....c.....w.....c....wwww.',
+                '.........c...........c........',
+                'w...........................ww.',
+              ];
+              var h = new wall(-100, -100, 50, 1700, 'gray');
+              var h = new wall(-100, -100, 1700, 50, 'gray');
+              var h = new wall(1600, -100, 50, 1700, 'gray');
+              var h = new wall(-100, 1600, 1700, 50, 'gray');
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  var n = false;
+                  if (a[i][q] === 'w') {
+                    n = 'dirtNoBorder';
+                  }
+                  if (a[i][q] === '=') {
+                    n = 'grass';
+                  }
+                  if (a[i][q] === 'c') {
+                    n = 'crate';
+                  }
+                  if (n) {
+                    var h = new wall(q * 50, i * 50, 50, 50, n);
+                  }
+                }
+              }
+            },
+          },
+          {
+            name: 'Lanes',
+            numPlayers: 6,
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 300;
+                  y = 150;
+                  break;
+                case 1:
+                  x = 15 * 50 + 25;
+                  y = 550;
+                  break;
+                case 2:
+                  x = 1250;
+                  y = 150;
+                  break;
+                case 3:
+                  x = 15 * 50;
+                  y = 1200;
+                  break;
+                case 4:
+                  x = 100;
+                  y = 1000;
+                  break;
+                case 5:
+                  x = 1450;
+                  y = 1000;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '..............................',
+                '..............................',
+                '..............................',
+                '......======......======......',
+                '......======......======......',
+                '......==ww==......==ww==......',
+                '......===w==..ww..==w===......',
+                '...c..======..ww..======..c...',
+                '...c..======......======..c...',
+                '.......cccc........cccc.......',
+                '......======......======......',
+                '......======..ww..======......',
+                '......======......======......',
+                '......======......======......',
+                '......==ww==..ww..==ww==......',
+                '......==ww==..ww..==ww==......',
+                '......======......======......',
+                '...c..======......======..c...',
+                '...c..======..ww..======..c...',
+                '......======......======......',
+                '.......cccc........cccc.......',
+                '......======......======......',
+                '...c..======..ww..======..c...',
+                '...c..==ww==..ww..==ww==..c...',
+                '......===w==......==w===......',
+                '......======......======......',
+                '......======......======......',
+                '..............................',
+                '..............................',
+                '..............................',
+              ];
+              var h = new wall(0, -100, 50, 1550, 'gray');
+              var h = new wall(0, -100, 1500, 50, 'gray');
+              var h = new wall(1500, -100, 50, 1550, 'gray');
+              var h = new wall(0, 1400, 1500, 50, 'gray');
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  var n = false;
+                  if (a[i][q] === 'w') {
+                    n = 'dirtNoBorder';
+                  }
+                  if (a[i][q] === '=') {
+                    n = 'grass';
+                  }
+                  if (a[i][q] === 'c') {
+                    n = 'crate';
+                  }
+                  if (n) {
+                    var h = new wall(q * 50, i * 50, 50, 50, n);
+                  }
+                }
+              }
+            },
+          },
+          {
+            name: 'Hotel',
+            numPlayers: 10,
+            bgColor: color(125, 71, 26),
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 300;
+                  y = 250;
+                  break;
+                case 1:
+                  x = 1300;
+                  y = 250;
+                  break;
+                case 2:
+                  x = 300;
+                  y = 500;
+                  break;
+                case 3:
+                  x = 1300;
+                  y = 500;
+                  break;
+                case 4:
+                  x = 300;
+                  y = 750;
+                  break;
+                case 5:
+                  x = 1300;
+                  y = 750;
+                  break;
+                case 6:
+                  x = 300;
+                  y = 1000;
+                  break;
+                case 7:
+                  x = 1300;
+                  y = 1000;
+                  break;
+                case 8:
+                  x = 300;
+                  y = 1400;
+                  break;
+                case 9:
+                  x = 1400;
+                  y = 1400;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '................................',
+                '.wwwwwwwwwwwwwwwwwwwwwwwwwwwwww.',
+                '.w==.....==w........w==.....==w.',
+                '.w==.....==w........w==.....==w.',
+                '.w==.......w....c...w.......==w.',
+                '.w........==....c...==........w.',
+                '.w........==........==........w.',
+                '.wwwwwwwwwww........wwwwwwwwwww.',
+                '.w=...=....w...c....w....=...=w.',
+                '.w=........w...c....w........=w.',
+                '.w.........=........=.........w.',
+                '.w.........=........=.........w.',
+                '.wwwwwwwwwww........wwwwwwwwwww.',
+                '.w=...=....w....c...w....=...=w.',
+                '.w=........w....c...w........=w.',
+                '.w.........=........=.........w.',
+                '.w.........=........=.........w.',
+                '.wwwwwwwwwww........wwwwwwwwwww.',
+                '.w=...=....w...c....w....=...=w.',
+                '.w=........w...c....w........=w.',
+                '.w.........=........=.........w.',
+                '.w.........=........=.........w.',
+                '.wwwwwwwwwww........wwwwwwwwwww.',
+                '.w............................w.',
+                '.w.www........................w.',
+                '.w.....................wwwwwwww.',
+                '.w......ccc...........c=......w.',
+                '.w......ccc..........c==......w.',
+                '.w......ccc.........w==.......w.',
+                '.w==..........................w.',
+                '.w==..........................w.',
+                '.wwwwwwwwwwwwwwwwwwwwwwwwwwwwww.',
+                '................................',
+              ];
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  if (a[i][q] === 'w') {
+                    curLength++;
+                  }
+                  if (a[i][q] !== 'w') {
+                    if (a[i][q] === '=') {
+                      var h = new wall(q * 50, i * 50, 50, 50, 'grass');
+                    }
+                    if (a[i][q] === 'c') {
+                      var h = new wall(q * 50, i * 50, 50, 50, 'crate');
+                    }
+                    if (curLength > 0) {
+                      var n = 'dirt';
+                      if (curLength /*>1*/ ) {
+                        n += 'NoBorder';
+                      }
+                      var h = new wall(q * 50 - 50 * curLength, i * 50, 50 * curLength, 50, n);
+                      curLength = 0;
+                    }
+                  }
+                }
+              }
+            },
+          },
+          {
+            name: 'Island',
+            numPlayers: 5,
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 1220;
+                  y = 910;
+                  break;
+                case 1:
+                  x = 730;
+                  y = 1210;
+                  break;
+                case 2:
+                  x = 1290;
+                  y = 1345;
+                  break;
+                case 3:
+                  x = 875;
+                  y = 500;
+                  break;
+                case 4:
+                  x = 1705;
+                  y = 1055;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '............................................',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.-------------......---....----------------.',
+                '.----------..................--------------.',
+                '.--------......................------------.',
+                '.-------........................-----------.',
+                '.------................wwwww.....----------.',
+                '.------............w...w...w......---------.',
+                '.------............w...w...w......---------.',
+                '.------..wwwww.........w...w.......--------.',
+                '.------..........w.....w.www.......--------.',
+                '.------............................--------.',
+                '.------........................cc...-------.',
+                '.------..............................------.',
+                '.------...=www..wwww.................------.',
+                '.-------..===....w..w........=.......------.',
+                '.-------..====..............===......------.',
+                '.-------..=w....w..........==w==.....------.',
+                '.-------...w.w..............===......------.',
+                '.--------..w.......w.........=......-------.',
+                '.--------..w..ww.www................-------.',
+                '.--------.....................c....--------.',
+                '.--------.....................c....--------.',
+                '.---------....................c....--------.',
+                '.---------..........www..w.........--------.',
+                '.----------........=ww............---------.',
+                '.------------....=====...w.......----------.',
+                '.---------------...===w..w.....------------.',
+                '.------------------=wwwwww...--------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+                '.------------------------------------------.',
+              ];
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                    if (a[i][q] === '-') {
+                    curLength++;
+                    }else{
+                    if (a[i][q] === '=') {
+                      var h = new wall(q * 50, i * 50, 50, 50, 'grass');
+                    }else if (a[i][q] === 'w') {
+                      var h = new wall(q * 50, i * 50, 50, 50, 'dirtNoBorder');
+                    }
+                    if(curLength>0){
+                    var h = new wall(q * 50 - 50 * curLength, i * 50, 50 * curLength, 50, 'water');
+                      curLength = 0;
+                    }
+                    }
+                }
+              }
+            },
+          },
+          {
+            name: 'Fortress',
+            numPlayers: 6,
+            bgColor: color(199, 199, 199),
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 365;
+                  y = 900;
+                  break;
+                case 1:
+                  x = 800;
+                  y = 445;
+                  break;
+                case 2:
+                  x = 1850;
+                  y = 300;
+                  break;
+                case 3:
+                  x = 1050;
+                  y = 2565;
+                  break;
+                case 4:
+                  x = 1040;
+                  y = 1200;
+                  break;
+                case 5:
+                  x = 1735;
+                  y = 990;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '..............................wwwwwwwwwwww.',
+                '..............................w==CCCCCCCCw.',
+                '..............................w==CCCCCCCCw.',
+                '..............................w==........w.',
+                '..............................w==........w.',
+                '............wwwwwwwwwwwwwwwwwww==........w.',
+                '............w..............C...==........w.',
+                '............w..............C...==........w.',
+                '............w..................==........w.',
+                '............w.........C........==...CCCCCw.',
+                '............w.........C........==...CCCCCw.',
+                '............w......wwwwwwwwwwww==...wwwwww.',
+                '............w..........CCCC.........w.....',
+                '............w.........CCCCC.........w.....',
+                'wwwwwwwwwwwww............CC.........w.....',
+                'w...........C.......................wwwww.',
+                'w...........C........................===w.',
+                'w....................................===w.',
+                'w....................................===w.',
+                'w...........C...........w............===w.',
+                'w...........C...........w............===w.',
+                'wwwwwwwwwwwwwwwwwww.....w............===w.',
+                '..................w.....w............===w.',
+                '..................w.....w...........wwwww.',
+                '..................w.....w...........w.....',
+                '............wwwwwww.....wwwwwwwwwwwww.....',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w...........C.....w...........',
+                '............w..........CC.....w...........',
+                '............w.........CCC.....w...........',
+                '............w....wwwwwwwww....w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............w.................w...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '............wooooooo...ooooooow...........',
+                '...........wwooooooo...oooooooww...',
+                '...........w...................w...',
+                '...........w.....C.......CCC...w...',
+                '...........w....C..............w...',
+                '...........w...C...........C...w...',
+                '...........w.......CCC.....C...w...',
+                '...........w...................w...',
+                '...........wwwwwwwwwwwwwwwwwwwww...',
+              ];
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  var n = false;
+                  if (a[i][q] === 'w') {
+                    n = 'dirtNoBorder';
+                  }
+                  if (a[i][q] === '=') {
+                    n = 'grass';
+                  }
+                  if (a[i][q] === 'C') {
+                    n = 'crate';
+                  }
+                  if (a[i][q] === 'o') {
+                    n = 'water';
+                  }
+                  if (n) {
+                    var h = new wall(q * 50, i * 50, 50, 50, n);
+                  }
+                }
+              }
+            },
+          },
+          {
+            name: 'Apple sauce',
+            numPlayers: 20,
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              return {
+                x: 100+i*(1200/4)-floor(i/4)*1200,
+                y: 100+floor(i/4)*(1200/5),
+              };
+            },
+            load: function() {
+              var a = [
+                '..w..=..c..w..=..c..w..=..c...',
+                '..............................',
+                '..............................',
+                '..c..w..=..c..w..=..c..w..=...',
+                '..............................',
+                '..............................',
+                '..w..=..c..w..=..c..w..=..c...',
+                '..............................',
+                '..............................',
+                '..c..w..=..c..w..=..c..w..=...',
+                '..............................',
+                '..............................',
+                '..w..=..c..w..=..c..w..=..c...',
+                '..............................',
+                '..............................',
+                '..c..w..=..c..w..=..c..w..=...',
+                '..............................',
+                '..............................',
+                '..w..=..c..w..=..c..w..=..c...',
+                '..............................',
+                '..............................',
+                '..c..w..=..c..w..=..c..w..=...',
+                '..............................',
+                '..............................',
+                '..w..=..c..w..=..c..w..=..c...',
+                '..............................',
+                '..............................',
+                '..c..w..=..c..w..=..c..w..=...',
+                '..............................',
+                '..............................',
+              ];
+              var h = new wall(0, -100, 50, 1550, 'gray');
+              var h = new wall(0, -100, 1500, 50, 'gray');
+              var h = new wall(1500, -100, 50, 1550, 'gray');
+              var h = new wall(0, 1400, 1500, 50, 'gray');
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  var n = false;
+                  if (a[i][q] === 'w') {
+                    n = 'dirtNoBorder';
+                  }
+                  if (a[i][q] === '=') {
+                    n = 'grass';
+                  }
+                  if (a[i][q] === 'c') {
+                    n = 'crate';
+                  }
+                  if (n) {
+                    var h = new wall(q * 50, i * 50, 50, 50, n);
+                  }
+                }
+              }
+            },
+          },
+          {
+            name: 'Shelter',
+            numPlayers: 6,
+            bgColor: color(199, 199, 199),
+            getPlayerStartPosition: function(i) {
+              var x = 0,
+                y = 0;
+              switch (i) {
+                case 0:
+                  x = 225;
+                  y = 225;
+                  break;
+                case 1:
+                  x = 1025;
+                  y = 225;
+                  break;
+                case 2:
+                  x = 225;
+                  y = 1025;
+                  break;
+                case 3:
+                  x = 1025;
+                  y = 1025;
+                  break;
+                case 4:
+                  x = 625;
+                  y = 250;
+                  break;
+                case 5:
+                  x = 625;
+                  y = 1000;
+                  break;
+              }
+              return {
+                x: x,
+                y: y,
+              };
+            },
+            load: function() {
+              var a = [
+                '.........................',
+                '.........................',
+                '......w...........w......',
+                '......w...........w......',
+                '......w...........w......',
+                '......w...........w......',
+                '..wwwww...ccccc...wwwww..',
+                '.........................',
+                '.........................',
+                '.........wwwwwww.........',
+                '.........................',
+                '.........w=...=w.........',
+                '...ccccc.w.....w.ccccc...',
+                '.........w=...=w.........',
+                '.........................',
+                '.........wwwwwww.........',
+                '.........................',
+                '.........................',
+                '..wwwww...ccccc...wwwww..',
+                '......w...........w......',
+                '......w...........w......',
+                '......w...........w......',
+                '......w...........w......',
+                '.........................',
+                '.........................',
+
+              ];
+              var h = new wall(-50, -100, 50, 1350, 'gray');
+              var h = new wall(-50, -100, 1350, 50, 'gray');
+              var h = new wall(1250, -100, 50, 1350, 'gray');
+              var h = new wall(-50, 1250, 1350, 50, 'gray');
+              var curLength = 0;
+              for (var i = 0; i < a.length; i++) {
+                for (var q = 0; q < a[i].length; q++) {
+                  var n = false;
+                  if (a[i][q] === 'w') {
+                    n = 'dirtNoBorder';
+                  }
+                  if (a[i][q] === '=') {
+                    n = 'grass';
+                  }
+                  if (a[i][q] === 'c') {
+                    n = 'crate';
+                  }
+                  if (a[i][q] === 'o') {
+                    n = 'water';
+                  }
+                  if (n) {
+                    var h = new wall(q * 50, i * 50, 50, 50, n);
+                  }
+                }
+              }
+            },
+          },
+        ];
+
+
+        // you
+        var p = new fruit(300, 300, 0);
+        p.name = "Player";
+
+
+        // how many walls to load each frame
+        var loadStep = 10;
+        var mapSelect = 1;
+        var loadCount = 0;
+        var tutorialPage = 0;
+
+        // basically load and start the game
+        function initLoading(mapIndex) {
+          if (maps[mapIndex].name === "Random") {
+              mapIndex = ~~random(2, maps.length);
+          }
+          scene = 'load';
+          loadCount = 0;
+          gameOver = false;
+          gameOverTime = 0;
+          p.toRemove = false;
+          p.noMove = 0;
+          p.clawSpin = 90;
+          p.prepLazer = false;
+          spectating = false;
+          shake = 10;
+          killfeed.messages = [];
+          chunks = [];
+          walls = [];
+          fruits = [];
+          effects = [];
+          lazerProjections = [];
+          chunks = [];
+          chunksIMG = [];
+          fruits.push(p);
+          var curNames = Object.assign([], fruitNames); // Makes a copy of fruitNames just for this round
+          while (fruits.length < maps[mapIndex].numPlayers) {
+            var h = new fruit(300, 300, ~~random(4));
+            h.name = curNames.splice(~~random(curNames.length), 1); // No two people can share a name
+          }
+          fruits = shuffleArray(fruits);
+          for (var i = 0; i < fruits.length; i++) {
+            var pos = maps[mapIndex].getPlayerStartPosition(i);
+            fruits[i].x = pos.x;
+            fruits[i].y = pos.y;
+          }
+          maps[mapIndex].load();
+        }
+
+        //initLoading(1);
+        //scene = 'e';
+
+        // syncs cMouse to mouse + camera stuff
+        function syncMouse() {
+          var inv = 1 / cam.zoom;
+          var om = 1 - cam.zoom;
+          cMouseX = (msX * inv) - cam.x - (300 * (om * inv));
+          cMouseY = (msY * inv) - cam.y - (300 * (om * inv));
+        }
+
+        
+
+        // button
+        function button(x, y, w, h, txt, col, txtCol, effect) {
+          pushStyle();
+          colorMode(HSB);
+          fill(hue(col), saturation(col), brightness(col) * 0.5, alpha(col));
+          rect(x, y, w, h, 10);
+          colorMode(RGB);
+          fill(col);
+          rect(x, y - h * 0.2, w, h, 10);
+          fill(txtCol);
+          textAlign(CENTER, CENTER);
+          text(txt, x + w / 2, y + h * 0.3);
+          if (msX > x && msY > y - h * 0.2 && msX < x + w && msY < y + h) {
+            fill(255, 100 * alpha(col) / 255);
+            rect(x, y - h * 0.2, w, h, 10);
+            cursor("pointer");
+            if (clicked) {
+              shake = 5;
+              effect();
+            }
+          }
+          popStyle();
+        }
+
+
+        frameRate(60);
+
+        var menuBgScroll = {x:300,y:300};
+        var msX = 0;
+        var msY = 0;
+        function draw() {
+        
+          try {
+        var window = (function(what) { return this[what]; })("window");
+        var scaleFactor = window.scaleFactor;
+        msX = (mouseX-300)/scaleFactor + 300;
+        msY = (mouseY-300)/scaleFactor + 300;
+            cursor(ARROW);
+            if (shake > 0.5) {
+              shake = lerp(shake, 0, 0.05);
+            } else {
+              shake = 0;
+            }
+            translate(random(-1, 1) * shake, random(-1, 1) * shake);
+            // all the stuff pretty much
+            switch (scene) {
+              case 'load': {
+
+                for (var i = 0; i < loadStep; i++) {
+                  if (walls[loadCount]) {
+                    setWallChunk(loadCount);
+                  }
+                  loadCount++;
+                }
+                if (loadCount >= walls.length) {
+                  scene = 'game';
+                }
+                background(214, 214, 214);
+                textAlign(CENTER, CENTER);
+                fill(0, 0, 0);
+                textSize(50);
+                text('loading ' + loadCount + '/' + walls.length, 300, 300);
+              }
+              break;
+              case 'settings':{
+              background(255, 143, 255);
+
+              menuBgScroll.x = lerp(menuBgScroll.x,msX,0.05);
+              menuBgScroll.y = lerp(menuBgScroll.y,msY,0.05);
+              var num = 20;
+              image(coolBg2,-100+((-(menuBgScroll.x-300))/300)*50+cos(frameCount)*num,-100+((-(menuBgScroll.y-300))/300)*50+sin(frameCount)*num,800,800);
+
+              fill(0,0,0,100);
+              noStroke();
+              rect(10,100,580,250,10);
+
+              textSize(50);
+              textAlign(CENTER,BASELINE);
+              fill(0,0,0);
+              text('Settings',300,170);
+              textSize(20);
+              text('oooo this page is so good lookin',300,400);
+              textSize(30);
+              var additional = '';
+              if(CONTROLS === 'wasd'){
+                additional = ' (standard)';
+              }
+              if(CONTROLS === 'w' || CONTROLS === 'click'){
+                additional = ' (in direction of mouse)';
+              }
+              text('Movement Controls:\n'+CONTROLS+additional,250,250);
+              p.x = 300;
+              p.y = 500;
+              p.toDir = -1;
+              pushMatrix();
+              translate(p.x,p.y);
+              scale(2);
+              translate(-p.x,-p.y);
+              p.anim = 'idle';
+              p.toRemove = false;
+              p.noMove = 0;
+              p.clawSpin = 90;
+              p.draw();
+              popMatrix();
+              textSize(50);
+              strokeWeight(5);
+                    button(500, 210, 50,100 , ">", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(CONTROLS === 'wasd'){
+                    CONTROLS = 'w';
+                    }else if(CONTROLS === 'click'){
+                    CONTROLS = 'wasd';
+                    }else{
+                    CONTROLS = 'click';
+                    }
+                  });
+                 textSize(30);
+                 button(200,20, 200,50, "Back", color(51, 143, 230), color(0,0,0),function() {
+                    scene = 'menu';
+                  });
+
+              image(bgSave,-pow(newSceneCount,2),0);
+              }
+              break;
+              case 'tutorial':{
+              background(176, 176, 176);
+              textAlign(CENTER,BASELINE);
+              fill(0,0,0);
+
+              switch(tutorialPage){
+              case 0:
+              textSize(50);
+              text('Move',300,170);
+              textSize(25);
+              text('W to go in direction of mouse',300,220);
+              textSize(20);
+              text('or just WASD if you change it in settings',300,250);
+              p.anim = 'move';
+              break;
+              case 1:
+              textSize(50);
+              text('Bop',300,170);
+              textSize(25);
+              text('Space to bop',300,220);
+              textSize(20);
+              text('All hits are eliminations',300,250);
+              text('If two attacking people hit each other\nat the same time,\nthe person who attacked more recently wins',300,290);
+              p.anim = 'idle';
+              p.bop();
+              p.noMove--;
+              break;
+              case 2:
+              textSize(50);
+              text('Blast',300,170);
+              textSize(25);
+              text('E to blast',300,220);
+              textSize(20);
+              text('Shoot a lazer after a cooldown',300,250);
+              text('All hits are eliminations',300,290);
+              text('You are vunerable during the cooldown',300,330);
+              p.anim = 'lazer';
+              break;
+              case 3:
+              textSize(50);
+              text('Win',300,170);
+              textSize(20);
+              text('Last apple standing wins!',300,220);
+              p.anim = 'move';
+              break;
+              }
+
+              p.x = 300;
+              p.y = 460;
+              p.toDir = -1;
+              pushMatrix();
+              translate(p.x,p.y);
+              scale(2);
+              translate(-p.x,-p.y);
+              p.toRemove = false;
+              p.draw();
+              popMatrix();
+              textSize(50);
+              strokeWeight(5);
+                    button(500, 210, 50,100 , ">", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(tutorialPage <= 2){
+                    tutorialPage++;
+                    }
+                    tutorialPage = round(tutorialPage);
+                  });
+                  button(50, 210, 50,100, "<", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(tutorialPage >= 1){
+                    tutorialPage--;
+                    tutorialPage = round(tutorialPage);
+                    }
+                  });
+                textSize(30);
+                 button(200,20, 200,50, "Back", color(51, 143, 230), color(0,0,0),function() {
+                    scene = 'menu';
+                  });
+
+              image(bgSave,-pow(newSceneCount,2),0);
+              }
+              break;
+              case 'mapSelect':{
+              background(176, 176, 176);
+
+              menuBgScroll.x = lerp(menuBgScroll.x,msX,0.05);
+              menuBgScroll.y = lerp(menuBgScroll.y,msY,0.05);
+              var num = 20;
+              image(coolBg2,-100+((-(menuBgScroll.x-300))/300)*50+cos(frameCount)*num,-100+((-(menuBgScroll.y-300))/300)*50+sin(frameCount)*num,800,800);
+
+              fill(255, 255, 255,100);
+              noStroke();
+              rect(10,100,580,250,10);
+
+              textSize(50);
+              textAlign(CENTER,BASELINE);
+              fill(0,0,0);
+              text('Map Select',300,170);
+              textSize(30);
+              text('Selected: '+maps[mapSelect].name+'\nNumber of players: '+maps[mapSelect].numPlayers,300,250);
+              p.x = 300;
+              p.y = 440;
+              p.toDir = -1;
+              pushMatrix();
+              translate(p.x,p.y);
+              scale(2);
+              translate(-p.x,-p.y);
+              p.anim = 'move';
+              p.toRemove = false;
+              p.noMove = 0;
+              p.clawSpin = 90;
+              p.draw();
+              popMatrix();
+              textSize(50);
+              strokeWeight(5);
+                    button(500, 210, 50,100 , ">", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(mapSelect <= maps.length-2){
+                        mapSelect++;
+                    }
+                    mapSelect = round(mapSelect);
+                  });
+                  button(50, 210, 50,100, "<", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(mapSelect >= 2){
+                        mapSelect--;
+                    }
+                    mapSelect = round(mapSelect);
+                  });
+                textSize(30);
+              button(200,530, 200,50, "Go!", color(200,40,40), color(0,0,0),function() {
+                    initLoading(mapSelect);
+                  });
+                 button(200,20, 200,50, "Back", color(51, 143, 230), color(0,0,0),function() {
+                    scene = 'menu';
+                  });
+
+              image(bgSave,-pow(newSceneCount,2),0);
+              }
+              break;
+              case 'menu': {
+              background(0, 0, 0);
+              // scrolling background
+
+              menuBgScroll.x = lerp(menuBgScroll.x,msX,0.05);
+              menuBgScroll.y = lerp(menuBgScroll.y,msY,0.05);
+              var num = 20;
+              image(coolBg,-100+((-(menuBgScroll.x-300))/300)*50+cos(frameCount)*num,-100+((-(menuBgScroll.y-300))/300)*50+sin(frameCount)*num,800,800);
+
+              for(var i = 320; i > 200; i-=5){
+                noStroke();
+                fill(0,0,0,10);
+                rect(-10,170-i/2,620,i);
+              }
+              logo(300,300);
+
+              p.x = 150;
+              p.y = 400;
+              p.toDir = -1;
+              pushMatrix();
+              translate(p.x,p.y);
+              scale(2);
+              translate(-p.x,-p.y);
+              p.anim = 'idle';
+              p.noMove = 0;
+              p.clawSpin = 90;
+              p.draw();
+              popMatrix();
+              stroke(0,0,0);
+              strokeWeight(5);
+              textSize(20);
+                  button(240, 450, 35, 35, ">", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(p.skin <= 2){
+                        p.skin++;
+                    }
+                    p.skin = round(p.skin);
+                  });
+                  button(25, 450, 35, 35, "<", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    if(p.skin >= 1){
+                        p.skin--;
+                    }
+                    p.skin = round(p.skin);
+                  });
+                  button(350, 350, 200, 35, "Tutorial", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    scene = 'tutorial';
+                    tutorialPage = 0;
+                  });
+                  button(350, 400, 200, 35, "Play", color(150,40,40),color(0,0,0),function() {
+                    scene = 'mapSelect';
+
+                  });
+                  button(350, 450, 200, 35, "Settings", color(119-50, 242-50, 145-50),color(0,0,0),function() {
+                    scene = 'settings';
+
+                  });
+              stroke(0,0,0);
+              strokeWeight(5);
+              textSize(20);
+              if(msX > 160 && msX < 440 && msY > 525 && msY < 565){
+              fill(214, 214, 214);
+              cursor('text');
+              if(pushedKey){
+                  var allowed = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNMM1234567890!@#$%^&*(),./;\'[]<>?:"{}|-=_+`~';
+                  if(parseInt(pushedKey,1) === 8){
+                  p.name = p.name.substring(0,p.name.length-1);
+                  }else if(allowed.includes(pushedKey.toString())){
+                  if(textWidth(p.name) < 200){
+                  p.name += pushedKey.toString();
+                  }
+                  }
+              }
+              }else{
+              fill(171, 171, 171);
+              }
+              rect(160,525,280,40,10);
+              fill(0,0,0);
+              textAlign(CENTER,BASELINE);
+              text('Name: '+p.name,300,553);
+              image(bgSave,-pow(newSceneCount,2),0);
+              }
+              break;
+              case 'game': {
+                syncMouse();
+                pushMatrix();
+                if(maps[mapSelect].bgColor){
+                background(maps[mapSelect].bgColor);
+                }else{
+                background(115, 255, 162);
+                }
+                translate(300, 300);
+                scale(cam.zoom);
+                translate(-300, -300);
+                translate(cam.x, cam.y);
+                cursor(HAND);
+                var camTarg;
+                if(!spectating){
+                camTarg = p;
+                }else{
+                camTarg = spectatingIndex;
+                }
+
+                if(camTarg){
+                cam.x = lerp(cam.x, -camTarg.x + 300, 0.09);
+                cam.y = lerp(cam.y, -camTarg.y + 300, 0.09);
+                }
+                cam.zoom = lerp(cam.zoom, toZoom, 0.07);
+
+                if (CONTROLS === 'wasd') {
+                  p.target = false;
+                  var x = 0;
+                  var y = 0;
+                  // 87 65 83 68
+                  if (pressed(keys[65])) {
+                    x -= 50;
+                  }
+                  if (pressed(keys[68])) {
+                    x += 50;
+                  }
+                  if (pressed(keys[87])) {
+                    y -= 50;
+                  }
+                  if (pressed(keys[83])) {
+                    y += 50;
+                  }
+                  x = round(x);
+                  y = round(y);
+                  if (x || y) {
+                    p.target = {
+                      x: p.x + x,
+                      y: p.y + y
+                    };
+                  }
+                  if (p.target) {
+                    p.move();
+                  }
+                }
+
+                p.target = {
+                  x: cMouseX,
+                  y: cMouseY
+                };
+
+                if (CONTROLS === 'w') {
+                  if (pressed(keys[87])) {
+                    p.move();
+                  }
+                }
+                if (CONTROLS === 'click') {
+                  if (mouseIsPressed) {
+                    p.move();
+                  }
+                }
+
+                if (tapped(keys[32])) {
+                  p.bop();
+                }
+                if (tapped(keys[69])) {
+                  p.lazer();
+                }
+
+                for (var i = fruits.length - 1; i > -1; i--) {
+                  if (fruits[i] !== p) {
+                    fruits[i].doAi();
+                  }
+                }
+                drawWalls(-cam.x + 300, -cam.y + 300, camTarg, true);
+                for (var i = fruits.length - 1; i > -1; i--) {
+                  fruits[i].physics();
+                  fruits[i].doCollisions();
+                  fruits[i].draw();
+                }
+                for (var i = fruits.length - 1; i > -1; i--) {
+                  if (fruits[i].toRemove) {
+                    if (fruits[i] === p) {
+                      gameOver = true;
+                    }
+                    fruits[i].remove();
+                  }
+                }
+                lazerProjections = [];
+                for (var i = fruits.length - 1; i > -1; i--) {
+                  if (fruits[i].anim === 'lazer') {
+                    projectBeam(fruits[i]);
+                  }
+                }
+                for (var i = effects.length - 1; i > -1; i--) {
+                  effects[i].draw();
+                }
+                drawWalls(-cam.x + 300, -cam.y + 300, camTarg);
+
+
+
+                // un-chunkified (slower in most cases)
+                // for(var i = walls.length-1; i > -1; i--){
+                //     walls[i].shadow(p);
+                // }
+                // for(var i = walls.length-1; i > -1; i--){
+                //     walls[i].draw();
+                // }
+
+                popMatrix();
+
+                fill(255);
+                textAlign(LEFT,BASELINE);
+                textSize(20);
+                text("Players left: " + fruits.length, 450, 30);
+                killfeed.displayMessages();
+                var txt = "Applesauced!";
+                if (fruits.length === 1) {
+                      if (fruits.includes(p)) {
+                          txt = "You win!";
+                      } else {
+                          txt = fruits[0].name + " wins!";
+
+                          // Scales down text that's too big
+                          if (textWidth(txt) > 280) {
+                              textSize(30*280/textWidth(txt));
+                          }
+                      }
+                      gameOver = true;
+                  }
+                if(spectating){
+                    fill(255);
+                    textAlign(CENTER,BASELINE);
+                    text("Space to change player\n\n"+spectatingIndex.name+' ('+spectatingIndex.playstyle.id+')', 300, 150);
+                    if (tapped(keys[32])) {
+                    spectatingIndex = fruits.indexOf(spectatingIndex);
+                    spectatingIndex++;
+                    shake = 6;
+                    spectatingIndex = round(spectatingIndex);
+                    if(spectatingIndex>=fruits.length){
+                    spectatingIndex = 0;
+                    }
+                    spectatingIndex = fruits[spectatingIndex];
+                    }
+                    textSize(30);
+                    stroke(0,0,0);
+                    if (fruits.length === 1) {
+                        spectating = false;
+                        p.x = spectatingIndex.x;
+                        p.y = spectatingIndex.y;
+                    }
+                 button(200,530, 200,50, "Leave", color(51, 143, 230), color(0,0,0),function() {
+                    scene = 'menu';
+                  });
+                }
+                if (gameOver && !spectating) {
+                  cursor("default");
+                  noStroke();
+                  fill(0, 0, 0, min(gameOverTime * 1.5 - 150, 150));
+                  rect(0, 0, width, height);
+                  rect(150, 150, 300, 230);
+                  fill(255, gameOverTime * 1.5 - 150);
+                  textSize(30);
+                  textAlign(CENTER, CENTER);
+                  text(txt, 300, 180);
+                  textSize(18);
+                  // Old version
+                //   textAlign(LEFT, TOP);
+                //   text("Kills:\nBops:\nBlasts:\nBop accuracy:\nBlast accuracy:\nTotal accuracy:", 180, 200, 300, 180);
+                //   textAlign(RIGHT, TOP);
+                //   text((p.bops + p.blasts) + "\n" + p.bops + "\n" + p.blasts + "\n" + ((p.bops/p.totalBops*100) || 0) + "%\n" + ((p.blasts/p.totalBlasts*100) || 0) + "%\n" + ((p.bops + p.blasts)/(p.totalBops + p.totalBlasts) || 0) + "%", 150, 200, 270, 180);
+                  textAlign(CENTER, TOP);
+                  text("Kills: " + (p.bops + p.blasts) + "\n" +
+                  "Bops: " + p.bops + "\n" +
+                  "Blasts: " + p.blasts + "\n" +
+                  "Bop accuracy: " + round((p.bops/p.totBops*100) || 0) + "%\n" +
+                  "Blast accuracy: " + round((p.blasts/p.totBlasts*100) || 0) + "%\n" +
+                  "Total accuracy: " + round((p.bops + p.blasts)/(p.totBops + p.totBlasts)*100 || 0) + "%", 150, 200, 300, 180);
+                  textSize(20);
+                  if (fruits.length > 1) {
+                      button(175, 400, 125, 35, "Home", color(0, 242, 24, gameOverTime * 1.5 - 150), color(255, gameOverTime * 1.5 - 150), function() {
+                        scene = 'menu';
+                        p.bops = 0;
+                        p.blasts = 0;
+                        p.totBops = 0;
+                        p.totBlasts = 0;
+                      });
+                      button(325, 400, 100, 35, "Spectate", color(181, gameOverTime * 1.5 - 150), color(255, gameOverTime * 1.5 - 150), function() {
+                        spectating = true;
+                        spectatingIndex = fruits[0];
+                        p.x = -100000;
+                        gameOverTime = 0;
+                      });
+                      button(230, 450, 140, 35, "Play again", color(200, 22, 22, gameOverTime * 1.5 - 150), color(255, gameOverTime * 1.5 - 150), function() {
+                        initLoading(mapSelect);
+                        p.bops = 0;
+                        p.blasts = 0;
+                        p.totBops = 0;
+                        p.totBlasts = 0;
+                      });
+                  } else {
+                      button(155, 400, 125, 35, "Home", color(0, 242, 24, gameOverTime * 1.5 - 150), color(255, gameOverTime * 1.5 - 150), function() {
+                        scene = 'menu';
+                        p.bops = 0;
+                        p.blasts = 0;
+                        p.totBops = 0;
+                        p.totBlasts = 0;
+                      });
+                      button(305, 400, 140, 35, "Play again", color(200, 22, 22, gameOverTime * 1.5 - 150), color(255, gameOverTime * 1.5 - 150), function() {
+                        initLoading(mapSelect);
+                        p.bops = 0;
+                        p.blasts = 0;
+                        p.totBops = 0;
+                        p.totBlasts = 0;
+                      });
+                  }
+                  gameOverTime++;
+                } else {
+                  // cursor(ARROW);
+                }
+
+              }
+              break;
+              case 'intro': {
+              pushMatrix();
+              scale(1.5);
+              doIntro();
+              popMatrix();
+              }
+              break;
+            }
+            fill(255, 0, 0);
+            textSize(20);
+            textAlign(LEFT, BASELINE);
+            text('Framerate: ' + round(this.__frameRate * 10) / 10, 10, 20);
+            manageKeys();
+          } catch (e) {
+            // failsafe
+            println('error: ' + e);
+            println('redirecting to menu, sorry for only having two weeks to catch bugs');
+            scene = 'menu';
+          }
+
+          // detect changes in scene and capture screen for epic 100% original transition
+          if(previousScene !== scene){
+            bgSave = get();
+            previousScene = scene;
+            newSceneCount = 0;
+          }
+          newSceneCount++;
+
+          // some stuff that has to be reset every frame
+          clicked = false;
+          pushedKey = false;
+        }
+        var clicked = false;
+        mouseClicked = function() {
+          clicked = true;
+        };
+      </script>
+
+    <script src="https://cdn.jsdelivr.net/gh/ackvonhuelio/chickenGameCodes/runPJS_onKA.js"></script>
+        <script>
+            let scaleFactor = 1;
+            function resizeCanvas() {
+                let canvas = document.querySelector("canvas");
+                if (!canvas) return;
+
+                scaleFactor = Math.min(window.innerWidth / 600, window.innerHeight / 700);
+                canvas.style.transform =`scale(${scaleFactor})`;
+
+                // Pass the scale factor to the PJS code
+                window.scaleFactor = scaleFactor;
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+            window.addEventListener("load", resizeCanvas);
+            window.addEventListener("orientationchange", resizeCanvas);
+            let firstClick = true;
+
+            document.addEventListener("click", function () {
+                if (firstClick) {
+                    setTimeout(resizeCanvas, 10);
+                    firstClick = false;
+                }
+            });
+            if (window.visualViewport) {
+window.visualViewport.addEventListener("resize", resizeCanvas);
+            }
+        </script>
+</body>
+
+</html>
